@@ -26,14 +26,14 @@ public static partial class HttpClientExtension
     /// <param name="numberOfRetries">Optional. The number of times to retry the request in case of failure. Defaults to 2.</param>
     /// <param name="logger">Optional. The logger used to log warnings and errors during the request and retry process. Can be null if logging is not required.</param>
     /// <param name="baseDelay">Optional. The initial delay for the exponential backoff calculation between retries. If not provided, defaults to a system-defined value. Subsequent retries exponentially increase the delay based on this initial value.</param>
-    /// <param name="cancellationToken"></param>
     /// <param name="log"></param>
+    /// <param name="cancellationToken"></param>
     public static ValueTask<TResponse?> SendWithRetry<TResponse>(this System.Net.Http.HttpClient client, string uri, int numberOfRetries = 2,
-        ILogger? logger = null, TimeSpan? baseDelay = null, CancellationToken cancellationToken = default, bool log = true)
+        ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
 
-        return SendWithRetry<TResponse>(client, request, numberOfRetries, logger, baseDelay, cancellationToken, log);
+        return SendWithRetry<TResponse>(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken);
     }
 
     /// <summary>
@@ -48,10 +48,10 @@ public static partial class HttpClientExtension
     /// <param name="numberOfRetries">Optional. The number of times to retry the request in case of failure. Defaults to 2.</param>
     /// <param name="logger">Optional. The logger used to log warnings, errors, and retry operations during the process. Can be null if logging is not desired.</param>
     /// <param name="baseDelay">Optional. The initial delay for the exponential backoff calculation between retries. If not provided, defaults to a system-defined value. Each subsequent retry exponentially increases the delay based on this initial value.</param>
-    /// <param name="cancellationToken"></param>
     /// <param name="log"></param>
+    /// <param name="cancellationToken"></param>
     public static async ValueTask<TResponse?> SendWithRetry<TRequest, TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, TRequest request, int numberOfRetries = 2,
-        ILogger? logger = null, TimeSpan? baseDelay = null, CancellationToken cancellationToken = default, bool log = true)
+        ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
 
@@ -65,7 +65,7 @@ public static partial class HttpClientExtension
             return default;
         }
 
-        return await SendWithRetry<TResponse>(client, requestMessage, numberOfRetries, logger, baseDelay, cancellationToken, log).NoSync();
+        return await SendWithRetry<TResponse>(client, requestMessage, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
     }
 
     /// <summary>
@@ -78,21 +78,21 @@ public static partial class HttpClientExtension
     /// <param name="numberOfRetries">Optional. The number of times to retry the request in case of failure. Defaults to 2.</param>
     /// <param name="logger">Optional. The logger used to log warnings and errors. Can be null if logging is not required.</param>
     /// <param name="baseDelay">Optional. The initial delay for the exponential backoff calculation. If not provided, defaults to 2 seconds. Subsequent retries double the delay time.</param>
-    /// <param name="cancellationToken"></param>
     /// <param name="log"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns>A <see cref="ValueTask{TResponse}"/> that represents the asynchronous operation, containing the deserialized response if successful, or null if the request ultimately fails after all retries.</returns>
     /// <remarks>
     /// This method retries requests upon encountering an <see cref="HttpRequestException"/>, <see cref="JsonException"/>, or <see cref="InvalidOperationException"/> (the latter representing non-success status codes).
     /// Each retry delay is calculated based on exponential backoff strategy with optional jitter to prevent retry storms in distributed systems.
     /// </remarks>
     public static async ValueTask<TResponse?> SendWithRetry<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request,
-        int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, CancellationToken cancellationToken = default, bool log = true)
+        int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
         TResponse? response = default;
 
         try
         {
-            response = await SendWithRetryInternal<TResponse>(client, request, numberOfRetries, logger, baseDelay, cancellationToken, log).NoSync();
+            response = await SendWithRetryInternal<TResponse>(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
         }
         catch (Exception ex)
         {
@@ -103,7 +103,7 @@ public static partial class HttpClientExtension
     }
 
     private static async ValueTask<TResponse?> SendWithRetryInternal<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request,
-        int numberOfRetries, ILogger? logger, TimeSpan? baseDelay, CancellationToken cancellationToken, bool log = true)
+        int numberOfRetries, ILogger? logger, TimeSpan? baseDelay, bool log, CancellationToken cancellationToken)
     {
         TimeSpan initialDelay = baseDelay ?? TimeSpan.FromSeconds(2);
 

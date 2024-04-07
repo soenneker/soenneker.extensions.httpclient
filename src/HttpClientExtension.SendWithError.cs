@@ -15,11 +15,11 @@ namespace Soenneker.Extensions.HttpClient;
 /// </summary>
 public static partial class HttpClientExtension
 {
-    public static ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TRequest, TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, string uri)
+    public static ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TRequest, TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, string uri, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
 
-        return SendWithError<TSuccessResponse, TErrorResponse>(client, requestMessage);
+        return SendWithError<TSuccessResponse, TErrorResponse>(client, requestMessage, cancellationToken);
     }
 
     public static async ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TRequest, TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, 
