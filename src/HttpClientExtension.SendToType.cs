@@ -4,10 +4,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Soenneker.Extensions.HttpResponseMessage;
 using Soenneker.Extensions.Object;
 using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
-using Soenneker.Utils.Json;
 
 namespace Soenneker.Extensions.HttpClient;
 
@@ -21,7 +21,7 @@ public static partial class HttpClientExtension
         return SendToType<TResponse>(client, request, logger, cancellationToken);
     }
 
-    public static async ValueTask<TResponse?> SendToType<TRequest, TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, TRequest request,
+    public static async ValueTask<TResponse?> SendToType<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object request,
         ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
@@ -32,7 +32,7 @@ public static partial class HttpClientExtension
         }
         catch (Exception ex)
         {
-            logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", typeof(TRequest).Name);
+            logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", request.GetType().Name);
             return default;
         }
 
@@ -71,15 +71,7 @@ public static partial class HttpClientExtension
                 return default;
             }
 
-            responseContent = await response.Content.ReadAsStringAsync(cancellationToken).NoSync();
-            var result = JsonUtil.Deserialize<TResponse>(responseContent);
-
-            if (result == null)
-            {
-                logger?.LogWarning("Deserialization of type ({type}) resulted in null, content: {responseContent}",  typeof(TResponse).Name,responseContent );
-                return default;
-            }
-
+            var result = await response.ToStrict<TResponse>();
             return result;
         }
         catch (JsonException jsonEx)

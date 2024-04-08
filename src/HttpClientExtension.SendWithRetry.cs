@@ -46,7 +46,7 @@ public static partial class HttpClientExtension
     /// <param name="baseDelay">Optional. The initial delay for the exponential backoff calculation between retries. If not provided, defaults to a system-defined value. Each subsequent retry exponentially increases the delay based on this initial value.</param>
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
-    public static async ValueTask<System.Net.Http.HttpResponseMessage?> SendWithRetry<TRequest>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, TRequest request, int numberOfRetries = 2,
+    public static async ValueTask<System.Net.Http.HttpResponseMessage?> SendWithRetry(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object request, int numberOfRetries = 2,
         ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
@@ -57,7 +57,7 @@ public static partial class HttpClientExtension
         }
         catch (Exception ex)
         {
-            logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", typeof(TRequest).Name);
+            logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", request.GetType().Name);
             return null;
         }
 

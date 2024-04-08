@@ -15,15 +15,15 @@ namespace Soenneker.Extensions.HttpClient;
 /// </summary>
 public static partial class HttpClientExtension
 {
-    public static ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TRequest, TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, string uri, CancellationToken cancellationToken = default)
+    public static ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, string uri, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
 
         return SendWithError<TSuccessResponse, TErrorResponse>(client, requestMessage, cancellationToken);
     }
 
-    public static async ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TRequest, TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, 
-        HttpMethod httpMethod, string uri, TRequest request, ILogger? logger = null, CancellationToken cancellationToken = default)
+    public static async ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, 
+        HttpMethod httpMethod, string uri, object request, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
 
@@ -33,7 +33,7 @@ public static partial class HttpClientExtension
         }
         catch (Exception ex)
         {
-            logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", typeof(TRequest).Name);
+            logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", request.GetType().Name);
             return (default, default);
         }
 

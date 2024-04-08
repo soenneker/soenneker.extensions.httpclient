@@ -40,7 +40,6 @@ public static partial class HttpClientExtension
     /// <summary>
     /// Sends an HTTP request with the specified method, URI, and request body, incorporating retry logic with exponential backoff and optional jitter for delays between retries.
     /// </summary>
-    /// <typeparam name="TRequest">The type of the request body. This type must be serializable into an HTTP content format.</typeparam>
     /// <typeparam name="TResponse">The type into which the HTTP response content will be deserialized. It is expected that the response can be deserialized into this type.</typeparam>
     /// <param name="client">The <see cref="System.Net.Http.HttpClient"/> instance used to send the HTTP request.</param>
     /// <param name="httpMethod">The HTTP method to be used for the request.</param>
@@ -51,7 +50,7 @@ public static partial class HttpClientExtension
     /// <param name="baseDelay">Optional. The initial delay for the exponential backoff calculation between retries. If not provided, defaults to a system-defined value. Each subsequent retry exponentially increases the delay based on this initial value.</param>
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
-    public static async ValueTask<TResponse?> SendWithRetryToType<TRequest, TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, TRequest request, int numberOfRetries = 2,
+    public static async ValueTask<TResponse?> SendWithRetryToType<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object request, int numberOfRetries = 2,
         ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
@@ -62,7 +61,7 @@ public static partial class HttpClientExtension
         }
         catch (Exception ex)
         {
-            logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", typeof(TRequest).Name);
+            logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", request.GetType().Name);
             return default;
         }
 
