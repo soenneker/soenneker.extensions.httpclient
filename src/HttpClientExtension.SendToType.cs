@@ -22,7 +22,7 @@ public static partial class HttpClientExtension
     }
 
     public static async ValueTask<TResponse?> SendToType<TRequest, TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, TRequest request,
-        ILogger? logger = null, bool log = true, CancellationToken cancellationToken = default)
+        ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
 
