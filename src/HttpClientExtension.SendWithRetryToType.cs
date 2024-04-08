@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
 using Soenneker.Extensions.HttpRequestMessage;
+using Soenneker.Extensions.HttpResponseMessage;
 using Soenneker.Extensions.Object;
 using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
@@ -92,7 +93,7 @@ public static partial class HttpClientExtension
 
         try
         {
-            response = await SendWithRetryInternalToType<TResponse>(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
+            response = await SendWithRetryToTypeInternal<TResponse>(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
         }
         catch (Exception ex)
         {
@@ -102,7 +103,7 @@ public static partial class HttpClientExtension
         return response;
     }
 
-    private static async ValueTask<TResponse?> SendWithRetryInternalToType<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request,
+    private static async ValueTask<TResponse?> SendWithRetryToTypeInternal<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request,
         int numberOfRetries, ILogger? logger, TimeSpan? baseDelay, bool log, CancellationToken cancellationToken)
     {
         TimeSpan initialDelay = baseDelay ?? TimeSpan.FromSeconds(2);
@@ -124,7 +125,7 @@ public static partial class HttpClientExtension
             System.Net.Http.HttpRequestMessage
                 clonedRequest = await request.Clone().NoSync(); // Unfortunately we need to clone the original request and send that one because you can only send a request once
 
-            HttpResponseMessage response = await client.SendAsync(clonedRequest, cancellationToken).NoSync();
+            System.Net.Http.HttpResponseMessage response = await client.SendAsync(clonedRequest, cancellationToken).NoSync();
 
             if (!response.IsSuccessStatusCode)
                 throw new InvalidOperationException($"HTTP request failed with status code: {response.StatusCode}");
@@ -134,6 +135,7 @@ public static partial class HttpClientExtension
             try
             {
                 responseContent = await response.Content.ReadAsStringAsync(cancellationToken).NoSync();
+
                 var result = JsonUtil.Deserialize<TResponse>(responseContent);
 
                 if (result != null) 

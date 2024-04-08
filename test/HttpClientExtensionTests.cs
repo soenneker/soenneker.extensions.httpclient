@@ -22,7 +22,7 @@ public class HttpClientExtensionTests : FixturedUnitTest
     {
         System.Net.Http.HttpClient client = await _cache.Get(nameof(HttpClientExtensionTests));
 
-        var response = await client.SendWithRetry<TodoItemResponse>("https://jsonplaceholder.typicode.com/todos/1", logger: Logger);
+        var response = await client.SendWithRetryToType<TodoItemResponse>("https://jsonplaceholder.typicode.com/todos/1", logger: Logger);
 
         response.Should().NotBeNull();
     }
@@ -32,7 +32,7 @@ public class HttpClientExtensionTests : FixturedUnitTest
     {
         System.Net.Http.HttpClient client = await _cache.Get(nameof(HttpClientExtensionTests));
 
-        var response = await client.SendWithRetry<TodoItemResponse>("https://google.com", logger: Logger, log: false);
+        var response = await client.SendWithRetryToType<TodoItemResponse>("https://google.com", logger: Logger, log: false);
 
         response.Should().BeNull();
     }

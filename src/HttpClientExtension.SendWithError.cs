@@ -43,7 +43,8 @@ public static partial class HttpClientExtension
     public static async ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, 
         System.Net.Http.HttpRequestMessage requestMessage, CancellationToken cancellationToken = default)
     {
-        HttpResponseMessage response = await client.SendAsync(requestMessage, cancellationToken).NoSync();
+        System.Net.Http.HttpResponseMessage response = await client.SendAsync(requestMessage, cancellationToken).NoSync();
+
         string responseContent = await response.Content.ReadAsStringAsync(cancellationToken).NoSync();
 
         if (!response.IsSuccessStatusCode)
