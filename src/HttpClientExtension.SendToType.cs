@@ -71,7 +71,7 @@ public static partial class HttpClientExtension
                 return default;
             }
 
-            var result = await response.ToStrict<TResponse>();
+            TResponse result = await response.ToStrict<TResponse>().NoSync();
             return result;
         }
         catch (JsonException jsonEx)

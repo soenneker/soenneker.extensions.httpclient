@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
 using Soenneker.Extensions.HttpRequestMessage;
-using Soenneker.Extensions.HttpResponseMessage;
 using Soenneker.Extensions.Object;
 using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
