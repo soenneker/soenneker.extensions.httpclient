@@ -21,7 +21,7 @@ public static partial class HttpClientExtension
         return SendToType<TResponse>(client, request, logger, cancellationToken);
     }
 
-    public static async ValueTask<TResponse?> SendToType<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object request,
+    public static ValueTask<TResponse?> SendToType<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object request,
         ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
@@ -36,7 +36,7 @@ public static partial class HttpClientExtension
             return default;
         }
 
-        return await SendToType<TResponse>(client, requestMessage, logger, cancellationToken).NoSync();
+        return SendToType<TResponse>(client, requestMessage, logger, cancellationToken);
     }
 
     public static async ValueTask<TResponse?> SendToType<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request,
@@ -71,7 +71,7 @@ public static partial class HttpClientExtension
                 return default;
             }
 
-            TResponse result = await response.ToStrict<TResponse>().NoSync();
+            TResponse result = await response.ToStrict<TResponse>(cancellationToken: cancellationToken).NoSync();
             return result;
         }
         catch (JsonException jsonEx)
