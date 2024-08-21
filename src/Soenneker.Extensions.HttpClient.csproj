@@ -46,6 +46,6 @@
       <PackageReference Include="Soenneker.Extensions.HttpRequestMessage" Version="2.1.343" />
       <PackageReference Include="Soenneker.Extensions.HttpResponseMessage" Version="2.1.770" />
       <PackageReference Include="Soenneker.Extensions.Object" Version="2.1.1657" />
-      <PackageReference Include="Soenneker.Utils.Method" Version="2.1.281" />
+      <PackageReference Include="Soenneker.Utils.Method" Version="2.1.282" />
     </ItemGroup>
 </Project>
