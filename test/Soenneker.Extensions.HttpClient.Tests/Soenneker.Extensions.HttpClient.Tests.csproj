@@ -32,7 +32,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\src\Soenneker.Extensions.HttpClient.csproj" />
+        <ProjectReference Include="..\..\src\Soenneker.Extensions.HttpClient.csproj" />
     </ItemGroup>
 
 </Project>
