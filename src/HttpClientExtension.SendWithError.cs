@@ -23,18 +23,21 @@ public static partial class HttpClientExtension
     }
 
     public static async ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, 
-        HttpMethod httpMethod, string uri, object request, ILogger? logger = null, CancellationToken cancellationToken = default)
+        HttpMethod httpMethod, string uri, object? request = null, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
 
-        try
+        if (request != null)
         {
-            requestMessage.Content = request.ToHttpContent();
-        }
-        catch (Exception ex)
-        {
-            logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", request.GetType().Name);
-            return (default, default);
+            try
+            {
+                requestMessage.Content = request.ToHttpContent();
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", request.GetType().Name);
+                return (default, default);
+            }
         }
 
         return await SendWithError<TSuccessResponse, TErrorResponse>(client, requestMessage, cancellationToken).NoSync();

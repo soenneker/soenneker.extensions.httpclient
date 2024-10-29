@@ -49,19 +49,22 @@ public static partial class HttpClientExtension
     /// <param name="baseDelay">Optional. The initial delay for the exponential backoff calculation between retries. If not provided, defaults to a system-defined value. Each subsequent retry exponentially increases the delay based on this initial value.</param>
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
-    public static async ValueTask<TResponse?> SendWithRetryToType<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object request, int numberOfRetries = 2,
+    public static async ValueTask<TResponse?> SendWithRetryToType<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null, int numberOfRetries = 2,
         ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
 
-        try
+        if (request != null)
         {
-            requestMessage.Content = request.ToHttpContent();
-        }
-        catch (Exception ex)
-        {
-            logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", request.GetType().Name);
-            return default;
+            try
+            {
+                requestMessage.Content = request.ToHttpContent();
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", request.GetType().Name);
+                return default;
+            }
         }
 
         return await SendWithRetryToType<TResponse>(client, requestMessage, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
@@ -121,7 +124,7 @@ public static partial class HttpClientExtension
         TResponse result = await retryPolicy.ExecuteAsync(async () =>
         {
             System.Net.Http.HttpRequestMessage
-                clonedRequest = await request.Clone().NoSync(); // Unfortunately we need to clone the original request and send that one because you can only send a request once
+                clonedRequest = await request.Clone(cancellationToken: cancellationToken).NoSync(); // Unfortunately we need to clone the original request and send that one because you can only send a request once
 
             System.Net.Http.HttpResponseMessage response = await client.SendAsync(clonedRequest, cancellationToken).NoSync();
 
