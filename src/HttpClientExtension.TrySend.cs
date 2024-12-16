@@ -16,12 +16,15 @@ public static partial class HttpClientExtension
     /// <param name="logger"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>A tuple containing a boolean for success and the <see cref="HttpResponseMessage"/> or null if the request failed.</returns>
-    public static async ValueTask<(bool successful, System.Net.Http.HttpResponseMessage? response)> TrySend(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, ILogger? logger = null, 
-        CancellationToken cancellationToken = default)
+    public static async ValueTask<(bool successful, System.Net.Http.HttpResponseMessage? response)> TrySend(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request,
+        ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         try
         {
             System.Net.Http.HttpResponseMessage response = await client.SendAsync(request, cancellationToken).NoSync();
+
+            if (!response.IsSuccessStatusCode)
+                logger?.LogError("HTTP request ({uri}) returned a non-successful status code ({statusCode})", request.RequestUri, response.StatusCode);
 
             return (response.IsSuccessStatusCode, response);
         }

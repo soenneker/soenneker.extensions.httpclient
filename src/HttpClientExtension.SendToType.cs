@@ -13,14 +13,13 @@ namespace Soenneker.Extensions.HttpClient;
 
 public static partial class HttpClientExtension
 {
-    public static ValueTask<TResponse?> SendToType<TResponse>(this System.Net.Http.HttpClient client, string uri, ILogger? logger = null, CancellationToken cancellationToken = default)
+    public static async ValueTask<TResponse?> SendToType<TResponse>(this System.Net.Http.HttpClient client, string uri, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
-
-        return SendToType<TResponse>(client, request, logger, cancellationToken);
+        return await SendToType<TResponse>(client, request, logger, cancellationToken).NoSync();
     }
 
-    public static ValueTask<TResponse?> SendToType<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null,
+    public static async ValueTask<TResponse?> SendToType<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null,
         ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
@@ -38,28 +37,11 @@ public static partial class HttpClientExtension
             }
         }
 
-        return SendToType<TResponse>(client, requestMessage, logger, cancellationToken);
+        return await SendToType<TResponse>(client, requestMessage, logger, cancellationToken);
     }
 
-    public static async ValueTask<TResponse?> SendToType<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request,
-        ILogger? logger = null, CancellationToken cancellationToken = default)
-    {
-        TResponse? response = default;
-
-        try
-        {
-            response = await SendToTypeInternal<TResponse>(client, request, logger, cancellationToken).NoSync();
-        }
-        catch (Exception ex)
-        {
-            logger?.LogError(ex, "Aborting SendWithRetry, exhausted max retry attempts, returning null {type} response", typeof(TResponse).Name);
-        }
-
-        return response;
-    }
-
-    private static async ValueTask<TResponse?> SendToTypeInternal<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request,
-        ILogger? logger, CancellationToken cancellationToken)
+    public static async ValueTask<TResponse?> SendToType<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, ILogger? logger,
+        CancellationToken cancellationToken = default)
     {
         string? responseContent = null;
 
@@ -69,7 +51,7 @@ public static partial class HttpClientExtension
 
             if (!response.IsSuccessStatusCode)
             {
-                logger?.LogError("HTTP request failed with status code: {statusCode}", response.StatusCode);
+                logger?.LogError("HTTP request ({uri}) returned a non-successful status code ({statusCode})", request.RequestUri, response.StatusCode);
                 return default;
             }
 

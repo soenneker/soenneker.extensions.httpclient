@@ -4,13 +4,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Polly;
-using Polly.Retry;
-using Soenneker.Extensions.HttpRequestMessage;
 using Soenneker.Extensions.Object;
-using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
-using Soenneker.Utils.Random;
 
 namespace Soenneker.Extensions.HttpClient;
 
@@ -19,6 +14,7 @@ public static partial class HttpClientExtension
     /// <summary>
     /// Sends an HTTP GET request to the specified URI with retry logic, using exponential backoff and optional jitter for delays between retries.
     /// </summary>
+    /// <typeparam name="TResponse">The type into which the HTTP response content will be deserialized. It is expected that the response can be deserialized into this type.</typeparam>
     /// <param name="client">The <see cref="System.Net.Http.HttpClient"/> instance used to send the HTTP GET request.</param>
     /// <param name="uri">The URI the request is sent to.</param>
     /// <param name="numberOfRetries">Optional. The number of times to retry the request in case of failure. Defaults to 2.</param>
@@ -26,16 +22,17 @@ public static partial class HttpClientExtension
     /// <param name="baseDelay">Optional. The initial delay for the exponential backoff calculation between retries. If not provided, defaults to a system-defined value. Subsequent retries exponentially increase the delay based on this initial value.</param>
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
-    public static async ValueTask<System.Net.Http.HttpResponseMessage> SendWithRetry(this System.Net.Http.HttpClient client, string uri, int numberOfRetries = 2,
+    public static async ValueTask<TResponse?> TrySendWithRetryToType<TResponse>(this System.Net.Http.HttpClient client, string uri, int numberOfRetries = 2,
         ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
-        return await SendWithRetry(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
+        return await TrySendWithRetryToType<TResponse>(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
     }
 
     /// <summary>
     /// Sends an HTTP request with the specified method, URI, and request body, incorporating retry logic with exponential backoff and optional jitter for delays between retries.
     /// </summary>
+    /// <typeparam name="TResponse">The type into which the HTTP response content will be deserialized. It is expected that the response can be deserialized into this type.</typeparam>
     /// <param name="client">The <see cref="System.Net.Http.HttpClient"/> instance used to send the HTTP request.</param>
     /// <param name="httpMethod">The HTTP method to be used for the request.</param>
     /// <param name="uri">The URI the request is sent to.</param>
@@ -45,8 +42,8 @@ public static partial class HttpClientExtension
     /// <param name="baseDelay">Optional. The initial delay for the exponential backoff calculation between retries. If not provided, defaults to a system-defined value. Each subsequent retry exponentially increases the delay based on this initial value.</param>
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
-    public static async ValueTask<System.Net.Http.HttpResponseMessage?> SendWithRetry(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null,
-        int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
+    public static async ValueTask<TResponse?> TrySendWithRetryToType<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null, int numberOfRetries = 2,
+        ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
 
@@ -59,17 +56,18 @@ public static partial class HttpClientExtension
             catch (Exception ex)
             {
                 logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", request.GetType().Name);
-                return null;
+                return default;
             }
         }
 
-        return await SendWithRetry(client, requestMessage, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
+        return await TrySendWithRetryToType<TResponse>(client, requestMessage, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
     }
 
     /// <summary>
     /// Sends an HTTP request with retry logic, using exponential backoff and optional jitter for delays between retries.
     /// This method retries the request upon encountering specific exceptions or non-success HTTP response codes.
     /// </summary>
+    /// <typeparam name="TResponse">The type into which the HTTP response content will be deserialized.</typeparam>
     /// <param name="client">The <see cref="System.Net.Http.HttpClient"/> instance used to send the request.</param>
     /// <param name="request">The <see cref="HttpRequestMessage"/> representing the HTTP request to be sent.</param>
     /// <param name="numberOfRetries">Optional. The number of times to retry the request in case of failure. Defaults to 2.</param>
@@ -82,36 +80,17 @@ public static partial class HttpClientExtension
     /// This method retries requests upon encountering an <see cref="HttpRequestException"/>, <see cref="JsonException"/>, or <see cref="InvalidOperationException"/> (the latter representing non-success status codes).
     /// Each retry delay is calculated based on exponential backoff strategy with optional jitter to prevent retry storms in distributed systems.
     /// </remarks>
-    public static async ValueTask<System.Net.Http.HttpResponseMessage> SendWithRetry(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request,
+    public static async ValueTask<TResponse?> TrySendWithRetryToType<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request,
         int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
-        TimeSpan initialDelay = baseDelay ?? TimeSpan.FromSeconds(2);
-
-        AsyncRetryPolicy? retryPolicy = Policy
-            .Handle<HttpRequestException>()
-            .Or<InvalidOperationException>()
-            .WaitAndRetryAsync(numberOfRetries,
-                retryAttempt => initialDelay * Math.Pow(2, retryAttempt - 1) + TimeSpan.FromMilliseconds(RandomUtil.Next(0, 1000)),
-                (exception, timespan, retryAttempt, _) =>
-                {
-                    if (log)
-                        logger?.LogWarning("HTTP Attempt {retryAttempt}: Retrying after {timespan} seconds due to error: {message}", retryAttempt, timespan.TotalSeconds, exception.Message);
-                });
-
-        System.Net.Http.HttpResponseMessage result = await retryPolicy.ExecuteAsync(async () =>
+        try
         {
-            System.Net.Http.HttpRequestMessage
-                clonedRequest = await request.Clone(cancellationToken: cancellationToken)
-                    .NoSync(); // Unfortunately we need to clone the original request and send that one because you can only send a request once
-
-            System.Net.Http.HttpResponseMessage response = await client.SendAsync(clonedRequest, cancellationToken).NoSync();
-
-            if (!response.IsSuccessStatusCode)
-                throw new InvalidOperationException($"HTTP request failed with status code: {response.StatusCode}");
-
-            return response;
-        }).NoSync();
-
-        return result;
+            return await SendWithRetryToType<TResponse>(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
+        }
+        catch (Exception ex)
+        {
+            logger?.LogError(ex, "Exhausted all retry attempts for the HTTP request, returning null");
+            return default;
+        }
     }
 }

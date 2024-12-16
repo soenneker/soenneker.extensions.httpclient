@@ -10,3 +10,42 @@
 ```
 dotnet add package Soenneker.Extensions.HttpClient
 ```
+
+### SendToString()
+
+```csharp
+var request = new HttpRequestMessage(HttpMethod.Get, "https://api.example.com/data");
+var responseContent = await _httpClient.SendToString(request);
+```
+
+### SendWithError()
+
+```csharp
+var request = new HttpRequestMessage(HttpMethod.Get, "https://api.example.com/data");
+MySuccessResponse? successResponse, MyErrorResponse? errorResponse = await _httpClient.SendWithError<MySuccessResponse, MyErrorResponse>(request);
+```
+
+### TrySend()
+
+```csharp
+var request = new HttpRequestMessage(HttpMethod.Get, "https://api.example.com/data");
+bool successful, HttpResponseMessage? response = await _httpClient.TrySend(request);
+```
+
+### SendWithRetryToType<ResponseType>()
+
+```csharp
+var requestData = new { Name = "John Doe" };
+var response = await _httpClient.SendWithRetryToType<MyResponseType>(
+    HttpMethod.Post,                 // HTTP Method
+    "https://api.example.com/data",   // URI
+    requestData,                     // Request body
+    numberOfRetries: 3,              // Retry 3 times
+    logger: _logger,                 // Optional logger
+    baseDelay: TimeSpan.FromSeconds(2), // Exponential backoff
+    log: true,                       // Enable logging
+    cancellationToken: cancellationToken // Cancellation token
+);
+```
+
+... and more

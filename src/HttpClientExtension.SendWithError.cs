@@ -10,16 +10,12 @@ using Soenneker.Utils.Json;
 
 namespace Soenneker.Extensions.HttpClient;
 
-/// <summary>
-/// A collection of helpful HttpClient extension methods, like retry and auto (de)serialization
-/// </summary>
 public static partial class HttpClientExtension
 {
-    public static ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, string uri, CancellationToken cancellationToken = default)
+    public static async ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, string uri, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
-
-        return SendWithError<TSuccessResponse, TErrorResponse>(client, requestMessage, cancellationToken);
+        return await SendWithError<TSuccessResponse, TErrorResponse>(client, requestMessage, cancellationToken).NoSync();
     }
 
     public static async ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, 

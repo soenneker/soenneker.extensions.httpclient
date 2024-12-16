@@ -28,12 +28,11 @@ public static partial class HttpClientExtension
     /// <param name="baseDelay">Optional. The initial delay for the exponential backoff calculation between retries. If not provided, defaults to a system-defined value. Subsequent retries exponentially increase the delay based on this initial value.</param>
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
-    public static ValueTask<TResponse?> SendWithRetryToType<TResponse>(this System.Net.Http.HttpClient client, string uri, int numberOfRetries = 2,
+    public static async ValueTask<TResponse?> SendWithRetryToType<TResponse>(this System.Net.Http.HttpClient client, string uri, int numberOfRetries = 2,
         ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
-
-        return SendWithRetryToType<TResponse>(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken);
+        return await SendWithRetryToType<TResponse>(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
     }
 
     /// <summary>
@@ -90,23 +89,6 @@ public static partial class HttpClientExtension
     public static async ValueTask<TResponse?> SendWithRetryToType<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request,
         int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
-        TResponse? response = default;
-
-        try
-        {
-            response = await SendWithRetryToTypeInternal<TResponse>(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
-        }
-        catch (Exception ex)
-        {
-            logger?.LogError(ex, "Aborting SendWithRetry, exhausted max retry attempts, returning null {type} response", typeof(TResponse).Name);
-        }
-
-        return response;
-    }
-
-    private static async ValueTask<TResponse?> SendWithRetryToTypeInternal<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request,
-        int numberOfRetries, ILogger? logger, TimeSpan? baseDelay, bool log, CancellationToken cancellationToken)
-    {
         TimeSpan initialDelay = baseDelay ?? TimeSpan.FromSeconds(2);
 
         AsyncRetryPolicy? retryPolicy = Policy
@@ -124,7 +106,8 @@ public static partial class HttpClientExtension
         TResponse result = await retryPolicy.ExecuteAsync(async () =>
         {
             System.Net.Http.HttpRequestMessage
-                clonedRequest = await request.Clone(cancellationToken: cancellationToken).NoSync(); // Unfortunately we need to clone the original request and send that one because you can only send a request once
+                clonedRequest = await request.Clone(cancellationToken: cancellationToken)
+                    .NoSync(); // Unfortunately we need to clone the original request and send that one because you can only send a request once
 
             System.Net.Http.HttpResponseMessage response = await client.SendAsync(clonedRequest, cancellationToken).NoSync();
 
@@ -139,7 +122,7 @@ public static partial class HttpClientExtension
 
                 var result = JsonUtil.Deserialize<TResponse>(responseContent);
 
-                if (result != null) 
+                if (result != null)
                     return result;
 
                 if (log)

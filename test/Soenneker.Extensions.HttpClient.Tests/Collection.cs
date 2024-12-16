@@ -8,6 +8,4 @@ namespace Soenneker.Extensions.HttpClient.Tests;
 /// ICollectionFixture interfaces.
 /// </summary>
 [CollectionDefinition("Collection")]
-public class Collection : ICollectionFixture<Fixture>
-{
-}
+public class Collection : ICollectionFixture<Fixture>;

@@ -18,7 +18,7 @@ public class HttpClientExtensionTests : FixturedUnitTest
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task SendWithRetry_should_result()
+    public async System.Threading.Tasks.Task SendWithRetryToType_should_result()
     {
         System.Net.Http.HttpClient client = await _cache.Get(nameof(HttpClientExtensionTests));
 
@@ -28,11 +28,11 @@ public class HttpClientExtensionTests : FixturedUnitTest
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task SendWithRetry_should_retry()
+    public async System.Threading.Tasks.Task TrySendWithRetryToType_should_return_null()
     {
         System.Net.Http.HttpClient client = await _cache.Get(nameof(HttpClientExtensionTests));
 
-        var response = await client.SendWithRetryToType<TodoItemResponse>("https://google.com", logger: Logger, log: false);
+        var response = await client.TrySendWithRetryToType<TodoItemResponse>("https://google.com", logger: Logger, log: false);
 
         response.Should().BeNull();
     }
