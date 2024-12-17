@@ -3,7 +3,6 @@ using Soenneker.Extensions.HttpClient.Tests.Responses;
 using Soenneker.Tests.FixturedUnit;
 using Soenneker.Utils.HttpClientCache.Abstract;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Soenneker.Extensions.HttpClient.Tests;
 

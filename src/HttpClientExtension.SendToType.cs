@@ -13,60 +13,32 @@ namespace Soenneker.Extensions.HttpClient;
 
 public static partial class HttpClientExtension
 {
-    public static async ValueTask<TResponse?> SendToType<TResponse>(this System.Net.Http.HttpClient client, string uri, ILogger? logger = null, CancellationToken cancellationToken = default)
+    public static async ValueTask<TResponse> SendToType<TResponse>(this System.Net.Http.HttpClient client, string uri, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
         return await SendToType<TResponse>(client, request, logger, cancellationToken).NoSync();
     }
 
-    public static async ValueTask<TResponse?> SendToType<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null,
+    public static async ValueTask<TResponse> SendToType<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null,
         ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
 
         if (request != null)
-        {
-            try
-            {
-                requestMessage.Content = request.ToHttpContent();
-            }
-            catch (Exception ex)
-            {
-                logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", request.GetType().Name);
-                return default;
-            }
-        }
+            requestMessage.Content = request.ToHttpContent();
 
-        return await SendToType<TResponse>(client, requestMessage, logger, cancellationToken);
+        return await SendToType<TResponse>(client, requestMessage, logger, cancellationToken).NoSync();
     }
 
-    public static async ValueTask<TResponse?> SendToType<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, ILogger? logger,
+    public static async ValueTask<TResponse> SendToType<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, ILogger? logger,
         CancellationToken cancellationToken = default)
     {
-        string? responseContent = null;
+        System.Net.Http.HttpResponseMessage response = await client.SendAsync(request, cancellationToken).NoSync();
 
-        try
-        {
-            System.Net.Http.HttpResponseMessage response = await client.SendAsync(request, cancellationToken).NoSync();
+        if (!response.IsSuccessStatusCode)
+            logger?.LogError("HTTP request ({uri}) returned a non-successful status code ({statusCode})", request.RequestUri, response.StatusCode);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                logger?.LogError("HTTP request ({uri}) returned a non-successful status code ({statusCode})", request.RequestUri, response.StatusCode);
-                return default;
-            }
-
-            TResponse result = await response.ToStrict<TResponse>(cancellationToken: cancellationToken).NoSync();
-            return result;
-        }
-        catch (JsonException jsonEx)
-        {
-            logger?.LogError(jsonEx, "Deserialization exception for type ({type}), content: {responseContent}", typeof(TResponse).Name, responseContent);
-            return default;
-        }
-        catch (Exception ex)
-        {
-            logger?.LogError(ex, "Exception occurred while sending HTTP request or reading response.");
-            return default;
-        }
+        TResponse result = await response.ToStrict<TResponse>(cancellationToken: cancellationToken).NoSync();
+        return result;
     }
 }

@@ -23,17 +23,7 @@ public static partial class HttpClientExtension
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
 
         if (request != null)
-        {
-            try
-            {
-                requestMessage.Content = request.ToHttpContent();
-            }
-            catch (Exception ex)
-            {
-                logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", request.GetType().Name);
-                return (default, default);
-            }
-        }
+            requestMessage.Content = request.TryToHttpContent();
 
         return await TrySendWithError<TSuccessResponse, TErrorResponse>(client, requestMessage, logger, cancellationToken).NoSync();
     }

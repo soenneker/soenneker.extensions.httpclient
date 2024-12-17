@@ -12,29 +12,20 @@ namespace Soenneker.Extensions.HttpClient;
 
 public static partial class HttpClientExtension
 {
-    public static async ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, string uri, CancellationToken cancellationToken = default)
+    public static async ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, string uri, 
+        CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
         return await SendWithError<TSuccessResponse, TErrorResponse>(client, requestMessage, cancellationToken).NoSync();
     }
 
     public static async ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> SendWithError<TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, 
-        HttpMethod httpMethod, string uri, object? request = null, ILogger? logger = null, CancellationToken cancellationToken = default)
+        HttpMethod httpMethod, string uri, object? request = null, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
 
         if (request != null)
-        {
-            try
-            {
-                requestMessage.Content = request.ToHttpContent();
-            }
-            catch (Exception ex)
-            {
-                logger?.LogError(ex, "Could not build HttpRequestMessage for request type ({type})", request.GetType().Name);
-                return (default, default);
-            }
-        }
+            requestMessage.Content = request.ToHttpContent();
 
         return await SendWithError<TSuccessResponse, TErrorResponse>(client, requestMessage, cancellationToken).NoSync();
     }

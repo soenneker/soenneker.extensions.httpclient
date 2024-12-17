@@ -14,9 +14,9 @@ public static partial class HttpClientExtension
     }
 
     public static ValueTask<(TSuccessResponse? SuccessResponse, ProblemDetailsDto? ErrorResponse)> SendWithProblemDetails<TSuccessResponse>(this System.Net.Http.HttpClient client, 
-        HttpMethod httpMethod, string uri, object? request = null, ILogger? logger = null, CancellationToken cancellationToken = default)
+        HttpMethod httpMethod, string uri, object? request = null, CancellationToken cancellationToken = default)
     {
-        return SendWithError<TSuccessResponse, ProblemDetailsDto>(client, httpMethod, uri, request, logger, cancellationToken);
+        return SendWithError<TSuccessResponse, ProblemDetailsDto>(client, httpMethod, uri, request, cancellationToken);
     }
 
     public static ValueTask<(TSuccessResponse? SuccessResponse, ProblemDetailsDto? ErrorResponse)> SendWithProblemDetails<TSuccessResponse>(this System.Net.Http.HttpClient client, 
