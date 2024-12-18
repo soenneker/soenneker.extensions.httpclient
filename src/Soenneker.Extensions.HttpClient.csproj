@@ -43,10 +43,10 @@
 
     <ItemGroup>
       <PackageReference Include="Polly" Version="8.5.0" />
-      <PackageReference Include="Soenneker.Dtos.ProblemDetails" Version="3.0.103" />
-      <PackageReference Include="Soenneker.Extensions.HttpRequestMessage" Version="3.0.796" />
-      <PackageReference Include="Soenneker.Extensions.HttpResponseMessage" Version="3.0.1237" />
-      <PackageReference Include="Soenneker.Extensions.Object" Version="3.0.2618" />
+      <PackageReference Include="Soenneker.Dtos.ProblemDetails" Version="3.0.104" />
+      <PackageReference Include="Soenneker.Extensions.HttpRequestMessage" Version="3.0.798" />
+      <PackageReference Include="Soenneker.Extensions.HttpResponseMessage" Version="3.0.1241" />
+      <PackageReference Include="Soenneker.Extensions.Object" Version="3.0.2625" />
       <PackageReference Include="Soenneker.Utils.Method" Version="3.0.415" />
     </ItemGroup>
 </Project>
