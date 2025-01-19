@@ -45,8 +45,7 @@ public static partial class HttpClientExtension
                 return default;
             }
 
-            TResponse result = await response.ToStrict<TResponse>(cancellationToken: cancellationToken).NoSync();
-            return result;
+            return await response.ToStrict<TResponse>(cancellationToken: cancellationToken).NoSync();
         }
         catch (JsonException jsonEx)
         {

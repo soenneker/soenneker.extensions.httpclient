@@ -1,6 +1,4 @@
-using System;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -38,7 +36,6 @@ public static partial class HttpClientExtension
         if (!response.IsSuccessStatusCode)
             logger?.LogError("HTTP request ({uri}) returned a non-successful status code ({statusCode})", request.RequestUri, response.StatusCode);
 
-        TResponse result = await response.ToStrict<TResponse>(cancellationToken: cancellationToken).NoSync();
-        return result;
+        return await response.ToStrict<TResponse>(cancellationToken: cancellationToken).NoSync();
     }
 }

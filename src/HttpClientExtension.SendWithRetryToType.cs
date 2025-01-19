@@ -7,10 +7,10 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
 using Soenneker.Extensions.HttpRequestMessage;
+using Soenneker.Extensions.HttpResponseMessage;
 using Soenneker.Extensions.Object;
 using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
-using Soenneker.Utils.Json;
 using Soenneker.Utils.Random;
 
 namespace Soenneker.Extensions.HttpClient;
@@ -104,28 +104,18 @@ public static partial class HttpClientExtension
             if (!response.IsSuccessStatusCode)
                 throw new InvalidOperationException($"HTTP request failed with status code: {response.StatusCode}");
 
-            string? responseContent = null;
-
             try
             {
-                responseContent = await response.Content.ReadAsStringAsync(cancellationToken).NoSync();
-
-                var result = JsonUtil.Deserialize<TResponse>(responseContent);
+                TResponse? result = await response.To<TResponse>(logger, cancellationToken).NoSync();
 
                 if (result != null)
                     return result;
-
-                if (log)
-                    throw new JsonException($"Deserialization of type ({typeof(TResponse).Name}) resulted in null, content: {responseContent}");
 
                 throw new JsonException($"Deserialization of type ({typeof(TResponse).Name}) resulted in null");
             }
             catch (JsonException jsonEx)
             {
                 logger?.LogError(jsonEx, "Deserialization exception for type ({type})", typeof(TResponse).Name);
-
-                if (log)
-                    throw new JsonException($"Deserialization of type ({typeof(TResponse).Name}) failed, content: {responseContent}");
 
                 throw new JsonException($"Deserialization of type ({typeof(TResponse).Name}) failed");
             }

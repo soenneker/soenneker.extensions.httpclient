@@ -33,7 +33,7 @@ public static partial class HttpClientExtension
     {
         try
         {
-            return await SendWithError<TSuccessResponse?, TErrorResponse?>(client, request, cancellationToken).NoSync();
+            return await SendWithError<TSuccessResponse?, TErrorResponse?>(client, request, logger, cancellationToken).NoSync();
         }
         catch (Exception ex)
         {

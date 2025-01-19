@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Soenneker.Extensions.ValueTask;
+using Soenneker.Extensions.HttpResponseMessage;
 
 namespace Soenneker.Extensions.HttpClient;
 
@@ -53,6 +54,6 @@ public static partial class HttpClientExtension
         if (!response.IsSuccessStatusCode)
             logger?.LogError("HTTP request ({uri}) returned a non-successful status code ({statusCode})", request.RequestUri, response.StatusCode);
 
-        return await response.Content.ReadAsStringAsync(cancellationToken).NoSync();
+        return await response.ToStringStrict(cancellationToken).NoSync();
     }
 }
