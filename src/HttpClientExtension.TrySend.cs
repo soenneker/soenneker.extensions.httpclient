@@ -28,6 +28,11 @@ public static partial class HttpClientExtension
 
             return (response.IsSuccessStatusCode, response);
         }
+        catch (OperationCanceledException)
+        {
+            logger?.LogWarning("HTTP request to {uri} was canceled.", request.RequestUri);
+            return (false, null);
+        }
         catch (Exception e)
         {
             logger?.LogError(e, "Exception sending request to {uri}", request.RequestUri);

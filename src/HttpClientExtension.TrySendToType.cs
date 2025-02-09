@@ -47,6 +47,11 @@ public static partial class HttpClientExtension
 
             return await response.ToStrict<TResponse>(cancellationToken: cancellationToken).NoSync();
         }
+        catch (OperationCanceledException)
+        {
+            logger?.LogWarning("HTTP request to {uri} was canceled.", request.RequestUri);
+            return default;
+        }
         catch (JsonException jsonEx)
         {
             logger?.LogError(jsonEx, "Deserialization exception for type ({type}), content: {responseContent}", typeof(TResponse).Name, responseContent);
