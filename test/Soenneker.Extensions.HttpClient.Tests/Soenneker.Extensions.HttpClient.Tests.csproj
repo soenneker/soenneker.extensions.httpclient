@@ -18,7 +18,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
-        <PackageReference Include="Soenneker.Utils.HttpClientCache" Version="3.0.1515" />
+        <PackageReference Include="Soenneker.Utils.HttpClientCache" Version="3.0.1517" />
         <PackageReference Include="xunit.runner.visualstudio" Version="3.0.2">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
