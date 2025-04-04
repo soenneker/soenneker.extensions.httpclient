@@ -45,6 +45,6 @@
       <PackageReference Include="Polly" Version="8.5.2" />
       <PackageReference Include="Soenneker.Extensions.HttpRequestMessage" Version="3.0.1119" />
       <PackageReference Include="Soenneker.Extensions.HttpResponseMessage" Version="3.0.1744" />
-      <PackageReference Include="Soenneker.Extensions.Object" Version="3.0.3670" />
+      <PackageReference Include="Soenneker.Extensions.Object" Version="3.0.3671" />
     </ItemGroup>
 </Project>
