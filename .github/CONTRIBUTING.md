@@ -1,4 +1,4 @@
-# Contributing to Soenneker.Extensions.HttpClient
+﻿# Contributing to Soenneker.Extensions.HttpClient
 
 We're excited that you're interested in contributing!
 
