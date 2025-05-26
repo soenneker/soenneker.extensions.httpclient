@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using Soenneker.Extensions.HttpClient.Tests.Responses;
 using Soenneker.Tests.FixturedUnit;
 using Soenneker.Utils.HttpClientCache.Abstract;
