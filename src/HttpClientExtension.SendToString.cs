@@ -24,9 +24,7 @@ public static partial class HttpClientExtension
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="client"/> or <paramref name="uri"/> is null or empty.</exception>
     /// <exception cref="HttpRequestException">Thrown if the HTTP request fails.</exception>
     /// <exception cref="TaskCanceledException">Thrown if the request is canceled via the <paramref name="cancellationToken"/>.</exception>
-
-    public static async ValueTask<string> SendToString(this System.Net.Http.HttpClient client, string uri, ILogger? logger = null,
-        CancellationToken cancellationToken = default)
+    public static async ValueTask<string> SendToString(this System.Net.Http.HttpClient client, string uri, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
 

@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Soenneker.Dtos.Results.Operation;
 using Soenneker.Extensions.HttpResponseMessage;
 using Soenneker.Extensions.Object;
 using Soenneker.Extensions.Task;
@@ -11,14 +12,13 @@ namespace Soenneker.Extensions.HttpClient;
 
 public static partial class HttpClientExtension
 {
-    public static async ValueTask<TResponse> SendToType<TResponse>(this System.Net.Http.HttpClient client, string uri, ILogger? logger = null,
-        CancellationToken cancellationToken = default)
+    public static async ValueTask<OperationResult<TResponse>?> SendToResult<TResponse>(this System.Net.Http.HttpClient client, string uri, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
-        return await SendToType<TResponse>(client, request, logger, cancellationToken).NoSync();
+        return await SendToResult<TResponse>(client, request, logger, cancellationToken).NoSync();
     }
 
-    public static async ValueTask<TResponse> SendToType<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null,
+    public static async ValueTask<OperationResult<TResponse>?> SendToResult<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null,
         ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
@@ -26,10 +26,10 @@ public static partial class HttpClientExtension
         if (request != null)
             requestMessage.Content = request.ToHttpContent();
 
-        return await SendToType<TResponse>(client, requestMessage, logger, cancellationToken).NoSync();
+        return await SendToResult<TResponse>(client, requestMessage, logger, cancellationToken).NoSync();
     }
 
-    public static async ValueTask<TResponse> SendToType<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, ILogger? logger,
+    public static async ValueTask<OperationResult<TResponse>?> SendToResult<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, ILogger? logger,
         CancellationToken cancellationToken = default)
     {
         System.Net.Http.HttpResponseMessage response = await client.SendAsync(request, cancellationToken).NoSync();
@@ -37,6 +37,6 @@ public static partial class HttpClientExtension
         if (!response.IsSuccessStatusCode)
             logger?.LogError("HTTP request ({uri}) returned a non-successful status code ({statusCode})", request.RequestUri, response.StatusCode);
 
-        return await response.ToStrict<TResponse>(cancellationToken: cancellationToken).NoSync();
+        return await response.ToResult<TResponse>(logger, cancellationToken).NoSync();
     }
 }

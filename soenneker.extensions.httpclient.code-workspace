@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../soenneker.extensions.httpresponsemessage"
+		}
+	],
+	"settings": {}
+}
