@@ -5,6 +5,12 @@
 		},
 		{
 			"path": "../soenneker.extensions.httpresponsemessage"
+		},
+		{
+			"path": "../../Blazor/soenneker.blazor.consumers.base"
+		},
+		{
+			"path": "../../Blazor/soenneker.blazor.consumer"
 		}
 	],
 	"settings": {}
