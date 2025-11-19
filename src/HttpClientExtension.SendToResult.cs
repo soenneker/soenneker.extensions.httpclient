@@ -12,13 +12,13 @@ namespace Soenneker.Extensions.HttpClient;
 
 public static partial class HttpClientExtension
 {
-    public static async ValueTask<OperationResult<TResponse>?> SendToResult<TResponse>(this System.Net.Http.HttpClient client, string uri, ILogger? logger = null, CancellationToken cancellationToken = default)
+    public static async ValueTask<OperationResult<TResponse>> SendToResult<TResponse>(this System.Net.Http.HttpClient client, string uri, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
         return await SendToResult<TResponse>(client, request, logger, cancellationToken).NoSync();
     }
 
-    public static async ValueTask<OperationResult<TResponse>?> SendToResult<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null,
+    public static async ValueTask<OperationResult<TResponse>> SendToResult<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null,
         ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
@@ -29,7 +29,7 @@ public static partial class HttpClientExtension
         return await SendToResult<TResponse>(client, requestMessage, logger, cancellationToken).NoSync();
     }
 
-    public static async ValueTask<OperationResult<TResponse>?> SendToResult<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, ILogger? logger,
+    public static async ValueTask<OperationResult<TResponse>> SendToResult<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, ILogger? logger,
         CancellationToken cancellationToken = default)
     {
         System.Net.Http.HttpResponseMessage response = await client.SendAsync(request, cancellationToken).NoSync();
