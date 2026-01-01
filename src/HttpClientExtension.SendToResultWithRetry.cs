@@ -110,7 +110,7 @@ public static partial class HttpClientExtension
             OperationResult<TResponse> result = await retryPolicy.ExecuteAsync(async () =>
                                                                  {
                                                                      // You can only send a request once, so we have to clone it
-                                                                     System.Net.Http.HttpRequestMessage clonedRequest = await request
+                                                                     using System.Net.Http.HttpRequestMessage clonedRequest = await request
                                                                          .Clone(cancellationToken: cancellationToken)
                                                                          .NoSync();
 
