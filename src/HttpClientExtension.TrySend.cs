@@ -24,7 +24,10 @@ public static partial class HttpClientExtension
             System.Net.Http.HttpResponseMessage response = await client.SendAsync(request, cancellationToken).NoSync();
 
             if (!response.IsSuccessStatusCode)
+            {
                 logger?.LogError("HTTP request ({uri}) returned a non-successful status code ({statusCode})", request.RequestUri, response.StatusCode);
+                // Caller is responsible for disposing the response
+            }
 
             return (response.IsSuccessStatusCode, response);
         }

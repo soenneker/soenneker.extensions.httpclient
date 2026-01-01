@@ -15,7 +15,7 @@ public static partial class HttpClientExtension
     public static async ValueTask<OperationResult<TResponse>> SendToResult<TResponse>(this System.Net.Http.HttpClient client, string uri, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
-        return await SendToResult<TResponse>(client, request, logger, cancellationToken).NoSync();
+        return await client.SendToResult<TResponse>(request, logger, cancellationToken).NoSync();
     }
 
     public static async ValueTask<OperationResult<TResponse>> SendToResult<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null,
@@ -26,13 +26,13 @@ public static partial class HttpClientExtension
         if (request != null)
             requestMessage.Content = request.ToHttpContent();
 
-        return await SendToResult<TResponse>(client, requestMessage, logger, cancellationToken).NoSync();
+        return await client.SendToResult<TResponse>(requestMessage, logger, cancellationToken).NoSync();
     }
 
     public static async ValueTask<OperationResult<TResponse>> SendToResult<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, ILogger? logger,
         CancellationToken cancellationToken = default)
     {
-        System.Net.Http.HttpResponseMessage response = await client.SendAsync(request, cancellationToken).NoSync();
+        using System.Net.Http.HttpResponseMessage response = await client.SendAsync(request, cancellationToken).NoSync();
 
         if (!response.IsSuccessStatusCode)
             logger?.LogError("HTTP request ({uri}) returned a non-successful status code ({statusCode})", request.RequestUri, response.StatusCode);

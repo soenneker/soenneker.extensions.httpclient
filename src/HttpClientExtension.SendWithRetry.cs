@@ -30,7 +30,7 @@ public static partial class HttpClientExtension
         ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
-        return await SendWithRetry(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
+        return await client.SendWithRetry(request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ public static partial class HttpClientExtension
         if (request != null)
             requestMessage.Content = request.ToHttpContent();
 
-        return await SendWithRetry(client, requestMessage, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
+        return await client.SendWithRetry(requestMessage, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
     }
 
     /// <summary>
@@ -97,9 +97,12 @@ public static partial class HttpClientExtension
             System.Net.Http.HttpResponseMessage response = await client.SendAsync(clonedRequest, cancellationToken).NoSync();
 
             if (!response.IsSuccessStatusCode)
+            {
+                response.Dispose(); // Dispose on failure since we're not returning it
                 throw new InvalidOperationException($"HTTP request failed with status code: {response.StatusCode}");
+            }
 
-            return response;
+            return response; // Caller is responsible for disposing the successful response
         }).NoSync();
 
         return result;

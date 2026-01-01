@@ -32,7 +32,7 @@ public static partial class HttpClientExtension
         TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
-        return await SendToTypeWithRetry<TResponse>(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
+        return await client.SendToTypeWithRetry<TResponse>(request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
     }
 
     /// <summary>
@@ -56,7 +56,7 @@ public static partial class HttpClientExtension
         if (request != null)
             requestMessage.Content = request.ToHttpContent();
 
-        return await SendToTypeWithRetry<TResponse>(client, requestMessage, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
+        return await client.SendToTypeWithRetry<TResponse>(requestMessage, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ public static partial class HttpClientExtension
                 clonedRequest = await request.Clone(cancellationToken: cancellationToken)
                     .NoSync(); // Unfortunately we need to clone the original request and send that one because you can only send a request once
 
-            System.Net.Http.HttpResponseMessage response = await client.SendAsync(clonedRequest, cancellationToken).NoSync();
+            using System.Net.Http.HttpResponseMessage response = await client.SendAsync(clonedRequest, cancellationToken).NoSync();
 
             if (!response.IsSuccessStatusCode)
                 throw new InvalidOperationException($"HTTP request failed with status code: {response.StatusCode}");

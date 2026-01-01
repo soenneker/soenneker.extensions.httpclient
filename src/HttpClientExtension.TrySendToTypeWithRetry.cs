@@ -26,7 +26,7 @@ public static partial class HttpClientExtension
         ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
-        return await TrySendToTypeWithRetry<TResponse>(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
+        return await client.TrySendToTypeWithRetry<TResponse>(request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public static partial class HttpClientExtension
         if (request != null)
             requestMessage.Content = request.TryToHttpContent();
 
-        return await TrySendToTypeWithRetry<TResponse>(client, requestMessage, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
+        return await client.TrySendToTypeWithRetry<TResponse>(requestMessage, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ public static partial class HttpClientExtension
     {
         try
         {
-            return await SendToTypeWithRetry<TResponse>(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
+            return await client.SendToTypeWithRetry<TResponse>(request, numberOfRetries, logger, baseDelay, log, cancellationToken).NoSync();
         }
         catch (Exception ex)
         {

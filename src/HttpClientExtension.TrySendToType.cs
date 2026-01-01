@@ -16,7 +16,7 @@ public static partial class HttpClientExtension
     public static async ValueTask<TResponse?> TrySendToType<TResponse>(this System.Net.Http.HttpClient client, string uri, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
-        return await TrySendToType<TResponse>(client, request, logger, cancellationToken).NoSync();
+        return await client.TrySendToType<TResponse>(request, logger, cancellationToken).NoSync();
     }
 
     public static async ValueTask<TResponse?> TrySendToType<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null,
@@ -27,7 +27,7 @@ public static partial class HttpClientExtension
         if (request != null)
             requestMessage.Content = request.TryToHttpContent();
 
-        return await TrySendToType<TResponse>(client, requestMessage, logger, cancellationToken).NoSync();
+        return await client.TrySendToType<TResponse>(requestMessage, logger, cancellationToken).NoSync();
     }
 
     public static async ValueTask<TResponse?> TrySendToType<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, ILogger? logger,
@@ -37,7 +37,7 @@ public static partial class HttpClientExtension
 
         try
         {
-            System.Net.Http.HttpResponseMessage response = await client.SendAsync(request, cancellationToken).NoSync();
+            using System.Net.Http.HttpResponseMessage response = await client.SendAsync(request, cancellationToken).NoSync();
 
             if (!response.IsSuccessStatusCode)
             {

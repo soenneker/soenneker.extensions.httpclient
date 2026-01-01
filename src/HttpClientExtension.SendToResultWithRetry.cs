@@ -36,8 +36,8 @@ public static partial class HttpClientExtension
         int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
-        return await SendToResultWithRetry<TResponse>(client, request, numberOfRetries, logger, baseDelay, log, cancellationToken)
-            .NoSync();
+        return await client.SendToResultWithRetry<TResponse>(request, numberOfRetries, logger, baseDelay, log, cancellationToken)
+                           .NoSync();
     }
 
     /// <summary>
@@ -63,8 +63,8 @@ public static partial class HttpClientExtension
         if (request != null)
             requestMessage.Content = request.ToHttpContent();
 
-        return await SendToResultWithRetry<TResponse>(client, requestMessage, numberOfRetries, logger, baseDelay, log, cancellationToken)
-            .NoSync();
+        return await client.SendToResultWithRetry<TResponse>(requestMessage, numberOfRetries, logger, baseDelay, log, cancellationToken)
+                           .NoSync();
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ public static partial class HttpClientExtension
                                                                          .Clone(cancellationToken: cancellationToken)
                                                                          .NoSync();
 
-                                                                     System.Net.Http.HttpResponseMessage response = await client
+                                                                     using System.Net.Http.HttpResponseMessage response = await client
                                                                          .SendAsync(clonedRequest, cancellationToken)
                                                                          .NoSync();
 

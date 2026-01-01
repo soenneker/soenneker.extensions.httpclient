@@ -14,7 +14,7 @@ public static partial class HttpClientExtension
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
 
-        return await TrySendWithError<TSuccessResponse, TErrorResponse>(client, requestMessage, logger, cancellationToken).NoSync();
+        return await client.TrySendWithError<TSuccessResponse, TErrorResponse>(requestMessage, logger, cancellationToken).NoSync();
     }
 
     public static async ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> TrySendWithError<TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, 
@@ -25,7 +25,7 @@ public static partial class HttpClientExtension
         if (request != null)
             requestMessage.Content = request.TryToHttpContent();
 
-        return await TrySendWithError<TSuccessResponse, TErrorResponse>(client, requestMessage, logger, cancellationToken).NoSync();
+        return await client.TrySendWithError<TSuccessResponse, TErrorResponse>(requestMessage, logger, cancellationToken).NoSync();
     }
 
     public static async ValueTask<(TSuccessResponse? SuccessResponse, TErrorResponse? ErrorResponse)> TrySendWithError<TSuccessResponse, TErrorResponse>(this System.Net.Http.HttpClient client, 
@@ -33,7 +33,7 @@ public static partial class HttpClientExtension
     {
         try
         {
-            return await SendWithError<TSuccessResponse?, TErrorResponse?>(client, request, logger, cancellationToken).NoSync();
+            return await client.SendWithError<TSuccessResponse?, TErrorResponse?>(request, logger, cancellationToken).NoSync();
         }
         catch (Exception ex)
         {
