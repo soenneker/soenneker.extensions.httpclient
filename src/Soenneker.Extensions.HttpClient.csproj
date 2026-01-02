@@ -14,7 +14,7 @@
         <AssemblyName>Soenneker.Extensions.HttpClient</AssemblyName>
         <PackageId>Soenneker.Extensions.HttpClient</PackageId>
         <PackageTags>extensions httpclient retry http client polly httpclientextension extension csharp dotnet c# .net</PackageTags>
-        <Copyright>Copyright © 2024-2025 Jake Soenneker</Copyright>
+        <Copyright>Copyright © 2024-2026 Jake Soenneker</Copyright>
         <Authors>Jake Soenneker</Authors>
         <Company>https://soenneker.com</Company>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
