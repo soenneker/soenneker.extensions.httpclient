@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Soenneker.Extensions.Object;
 using Soenneker.Extensions.ValueTask;
+using Soenneker.Utils.MemoryStream.Abstract;
 
 namespace Soenneker.Extensions.HttpClient;
 
@@ -19,13 +20,15 @@ public static partial class HttpClientExtension
     /// <param name="numberOfRetries">Optional. The number of times to retry the request in case of failure. Defaults to 2.</param>
     /// <param name="logger">Optional. The logger used to log warnings and errors during the request and retry process. Can be null if logging is not required.</param>
     /// <param name="baseDelay">Optional. The initial delay for the exponential backoff calculation between retries. If not provided, defaults to a system-defined value. Subsequent retries exponentially increase the delay based on this initial value.</param>
+    /// <param name="memoryStreamUtil"></param>
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
     public static async ValueTask<System.Net.Http.HttpResponseMessage?> TrySendWithRetry(this System.Net.Http.HttpClient client, string uri,
-        int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
+        int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, IMemoryStreamUtil? memoryStreamUtil = null, bool log = true,
+        CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
-        return await client.TrySendWithRetry(request, numberOfRetries, logger, baseDelay, log, cancellationToken)
+        return await client.TrySendWithRetry(request, numberOfRetries, logger, baseDelay, memoryStreamUtil, log, cancellationToken)
                            .NoSync();
     }
 
@@ -39,18 +42,19 @@ public static partial class HttpClientExtension
     /// <param name="numberOfRetries">Optional. The number of times to retry the request in case of failure. Defaults to 2.</param>
     /// <param name="logger">Optional. The logger used to log warnings, errors, and retry operations during the process. Can be null if logging is not desired.</param>
     /// <param name="baseDelay">Optional. The initial delay for the exponential backoff calculation between retries. If not provided, defaults to a system-defined value. Each subsequent retry exponentially increases the delay based on this initial value.</param>
+    /// <param name="memoryStreamUtil"></param>
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
     public static async ValueTask<System.Net.Http.HttpResponseMessage?> TrySendWithRetry(this System.Net.Http.HttpClient client, HttpMethod httpMethod,
-        string uri, object? request = null, int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true,
-        CancellationToken cancellationToken = default)
+        string uri, object? request = null, int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null,
+        IMemoryStreamUtil? memoryStreamUtil = null, bool log = true, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
 
         if (request != null)
             requestMessage.Content = request.TryToHttpContent();
 
-        return await client.TrySendWithRetry(requestMessage, numberOfRetries, logger, baseDelay, log, cancellationToken)
+        return await client.TrySendWithRetry(requestMessage, numberOfRetries, logger, baseDelay, memoryStreamUtil, log, cancellationToken)
                            .NoSync();
     }
 
@@ -63,6 +67,7 @@ public static partial class HttpClientExtension
     /// <param name="numberOfRetries">Optional. The number of times to retry the request in case of failure. Defaults to 2.</param>
     /// <param name="logger">Optional. The logger used to log warnings and errors. Can be null if logging is not required.</param>
     /// <param name="baseDelay">Optional. The initial delay for the exponential backoff calculation. If not provided, defaults to 2 seconds. Subsequent retries double the delay time.</param>
+    /// <param name="memoryStreamUtil"></param>
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>A <see cref="ValueTask{TResponse}"/> that represents the asynchronous operation, containing the deserialized response if successful, or null if the request ultimately fails after all retries.</returns>
@@ -71,12 +76,12 @@ public static partial class HttpClientExtension
     /// Each retry delay is calculated based on exponential backoff strategy with optional jitter to prevent retry storms in distributed systems.
     /// </remarks>
     private static async ValueTask<System.Net.Http.HttpResponseMessage?> TrySendWithRetry(this System.Net.Http.HttpClient client,
-        System.Net.Http.HttpRequestMessage request, int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true,
-        CancellationToken cancellationToken = default)
+        System.Net.Http.HttpRequestMessage request, int numberOfRetries, ILogger? logger, TimeSpan? baseDelay, IMemoryStreamUtil? memoryStreamUtil, bool log,
+        CancellationToken cancellationToken)
     {
         try
         {
-            return await client.SendWithRetry(request, numberOfRetries, logger, baseDelay, log, cancellationToken)
+            return await client.SendWithRetry(request, numberOfRetries, logger, baseDelay, memoryStreamUtil, log, cancellationToken)
                                .NoSync();
         }
         catch (Exception ex)
