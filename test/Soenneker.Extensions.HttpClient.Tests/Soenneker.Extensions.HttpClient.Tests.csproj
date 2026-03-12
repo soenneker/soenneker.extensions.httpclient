@@ -26,7 +26,7 @@
     <PackageReference Include="xUnit.v3" Version="3.2.2" /></ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Soenneker.Extensions.HttpClient.csproj" />
+        <ProjectReference Include="..\..\src\Soenneker.Extensions.HttpClient\Soenneker.Extensions.HttpClient.csproj" />
     </ItemGroup>
 
     <ItemGroup>
