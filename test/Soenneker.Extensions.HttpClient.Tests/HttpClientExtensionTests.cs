@@ -1,22 +1,21 @@
 using AwesomeAssertions;
 using Soenneker.Extensions.HttpClient.Tests.Responses;
-using Soenneker.Tests.FixturedUnit;
+using Soenneker.Tests.HostedUnit;
 using Soenneker.Utils.HttpClientCache.Abstract;
-using Xunit;
 
 namespace Soenneker.Extensions.HttpClient.Tests;
 
-[Collection("Collection")]
-public class HttpClientExtensionTests : FixturedUnitTest
+[ClassDataSource<Host>(Shared = SharedType.PerTestSession)]
+public class HttpClientExtensionTests : HostedUnitTest
 {
     private readonly IHttpClientCache _cache;
 
-    public HttpClientExtensionTests(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+    public HttpClientExtensionTests(Host host) : base(host)
     {
         _cache = Resolve<IHttpClientCache>();
     }
 
-    [Fact]
+    [Test]
     public async System.Threading.Tasks.Task SendToTypeWithRetry_should_result()
     {
         System.Net.Http.HttpClient client = await _cache.Get(nameof(HttpClientExtensionTests), cancellationToken: CancellationToken);
@@ -26,7 +25,7 @@ public class HttpClientExtensionTests : FixturedUnitTest
         response.Should().NotBeNull();
     }
 
-    [Fact]
+    [Test]
     public async System.Threading.Tasks.Task TrySendToTypeWithRetry_should_return_null()
     {
         System.Net.Http.HttpClient client = await _cache.Get(nameof(HttpClientExtensionTests), cancellationToken: CancellationToken);
