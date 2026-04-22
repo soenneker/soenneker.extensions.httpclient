@@ -10,7 +10,7 @@ namespace Soenneker.Extensions.HttpClient.Tests;
 
 public class Host : UnitTestHost
 {
-    public override Task InitializeAsync()
+    public override global::System.Threading.Tasks.Task InitializeAsync()
     {
         SetupIoC(Services);
 
@@ -30,3 +30,4 @@ public class Host : UnitTestHost
         services.AddHttpClientCacheAsSingleton();
     }
 }
+
