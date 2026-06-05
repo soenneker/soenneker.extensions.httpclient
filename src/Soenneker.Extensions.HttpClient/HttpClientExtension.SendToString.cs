@@ -9,6 +9,9 @@ using Soenneker.Extensions.HttpResponseMessage;
 
 namespace Soenneker.Extensions.HttpClient;
 
+/// <summary>
+/// Represents the http client extension.
+/// </summary>
 public static partial class HttpClientExtension
 {
     /// <summary>

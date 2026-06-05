@@ -13,8 +13,20 @@ using Soenneker.Constants.UserMessages;
 
 namespace Soenneker.Extensions.HttpClient;
 
+/// <summary>
+/// Represents the http client extension.
+/// </summary>
 public static partial class HttpClientExtension
 {
+    /// <summary>
+    /// Attempts to execute send to result.
+    /// </summary>
+    /// <typeparam name="TResponse">The TResponse type.</typeparam>
+    /// <param name="client">The client.</param>
+    /// <param name="uri">The uri.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task containing the result of the operation.</returns>
     public static async ValueTask<OperationResult<TResponse>> TrySendToResult<TResponse>(this System.Net.Http.HttpClient client, string uri,
         ILogger? logger = null, CancellationToken cancellationToken = default)
     {
@@ -23,6 +35,17 @@ public static partial class HttpClientExtension
                            .NoSync();
     }
 
+    /// <summary>
+    /// Attempts to execute send to result.
+    /// </summary>
+    /// <typeparam name="TResponse">The TResponse type.</typeparam>
+    /// <param name="client">The client.</param>
+    /// <param name="httpMethod">The http method.</param>
+    /// <param name="uri">The uri.</param>
+    /// <param name="request">The request.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task containing the result of the operation.</returns>
     public static async ValueTask<OperationResult<TResponse>> TrySendToResult<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod,
         string uri, object? request = null, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
@@ -35,6 +58,15 @@ public static partial class HttpClientExtension
                            .NoSync();
     }
 
+    /// <summary>
+    /// Attempts to execute send to result.
+    /// </summary>
+    /// <typeparam name="TResponse">The TResponse type.</typeparam>
+    /// <param name="client">The client.</param>
+    /// <param name="request">The request.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task containing the result of the operation.</returns>
     public static async ValueTask<OperationResult<TResponse>> TrySendToResult<TResponse>(this System.Net.Http.HttpClient client,
         System.Net.Http.HttpRequestMessage request, ILogger? logger, CancellationToken cancellationToken = default)
     {
