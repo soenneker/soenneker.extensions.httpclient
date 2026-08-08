@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Soenneker.Utils.HttpClientCache" Version="4.0.2014" />
+        <PackageReference Include="Soenneker.Utils.HttpClientCache" Version="4.0.2015" />
         <PackageReference Include="Soenneker.Utils.Test" Version="4.0.323" />
         <PackageReference Include="Soenneker.Tests.HostedUnit" Version="4.0.173" />
         <PackageReference Include="TUnit" Version="1.63.25" />
