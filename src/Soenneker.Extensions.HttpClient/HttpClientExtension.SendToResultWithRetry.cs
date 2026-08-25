@@ -1,6 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Polly;
-using Polly.Retry;
 using Soenneker.Dtos.Results.Operation;
 using Soenneker.Extensions.HttpRequestMessage;
 using Soenneker.Extensions.HttpResponseMessage;
@@ -92,55 +90,37 @@ public static partial class HttpClientExtension
         System.Net.Http.HttpRequestMessage request, int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true,
         CancellationToken cancellationToken = default)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(numberOfRetries);
         TimeSpan initialDelay = baseDelay ?? TimeSpan.FromSeconds(2);
-
-        AsyncRetryPolicy retryPolicy = Policy.Handle<HttpRequestException>()
-                                             .Or<InvalidOperationException>() // used to represent non-success status codes we want to retry
-                                             .WaitAndRetryAsync(numberOfRetries,
-                                                 retryAttempt => initialDelay * Math.Pow(2, retryAttempt - 1) +
-                                                                 TimeSpan.FromMilliseconds(RandomUtil.Next(0, 1000)), (exception, timespan, retryAttempt, _) =>
-                                                 {
-                                                     if (!log)
-                                                         return;
-
-                                                     logger?.LogWarning(exception,
-                                                         "HTTP attempt {RetryAttempt}: retrying after {DelaySeconds} seconds due to error.", retryAttempt,
-                                                         timespan.TotalSeconds);
-                                                 });
 
         try
         {
-            OperationResult<TResponse> result = await retryPolicy.ExecuteAsync(async () =>
-                                                                 {
-                                                                     // You can only send a request once, so we have to clone it
-                                                                     using System.Net.Http.HttpRequestMessage clonedRequest = await request
-                                                                         .Clone(cancellationToken: cancellationToken)
-                                                                         .NoSync();
+            for (var retryAttempt = 0;;)
+            {
+                try
+                {
+                    using System.Net.Http.HttpRequestMessage clonedRequest = await request.Clone(cancellationToken: cancellationToken).NoSync();
+                    using System.Net.Http.HttpResponseMessage response = await client.SendAsync(clonedRequest, cancellationToken).NoSync();
 
-                                                                     using System.Net.Http.HttpResponseMessage response = await client
-                                                                         .SendAsync(clonedRequest, cancellationToken)
-                                                                         .NoSync();
+                    if (!response.IsSuccessStatusCode)
+                        throw new InvalidOperationException($"HTTP request failed with status code: {response.StatusCode}");
 
-                                                                     if (!response.IsSuccessStatusCode)
-                                                                     {
-                                                                         // Use exception to drive Polly retry behavior
-                                                                         throw new InvalidOperationException(
-                                                                             $"HTTP request failed with status code: {response.StatusCode}");
-                                                                     }
+                    return await response.ToResult<TResponse>(logger, cancellationToken).NoSync();
+                }
+                catch (Exception exception) when ((exception is HttpRequestException or InvalidOperationException) && retryAttempt < numberOfRetries)
+                {
+                    retryAttempt++;
+                    TimeSpan delay = initialDelay * Math.Pow(2, retryAttempt - 1) + TimeSpan.FromMilliseconds(RandomUtil.Next(0, 1000));
 
-                                                                     // Let ToResult handle JSON / ProblemDetails / logging, etc.
-                                                                     OperationResult<TResponse> operationResult = await response
-                                                                         .ToResult<TResponse>(logger, cancellationToken)
-                                                                         .NoSync();
+                    if (log)
+                    {
+                        logger?.LogWarning(exception, "HTTP attempt {RetryAttempt}: retrying after {DelaySeconds} seconds due to error.", retryAttempt,
+                            delay.TotalSeconds);
+                    }
 
-                                                                     // We do NOT throw based on operationResult.Failed here;
-                                                                     // the server responded successfully, so we surface the problem to the caller
-                                                                     // instead of retrying for app-level errors.
-                                                                     return operationResult;
-                                                                 })
-                                                                 .NoSync();
-
-            return result;
+                    await System.Threading.Tasks.Task.Delay(delay, cancellationToken).NoSync();
+                }
+            }
         }
         catch (OperationCanceledException oce) when (cancellationToken.IsCancellationRequested)
         {

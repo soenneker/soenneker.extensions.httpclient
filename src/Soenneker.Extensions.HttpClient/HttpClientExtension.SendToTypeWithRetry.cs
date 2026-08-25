@@ -4,8 +4,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Polly;
-using Polly.Retry;
 using Soenneker.Extensions.HttpRequestMessage;
 using Soenneker.Extensions.HttpResponseMessage;
 using Soenneker.Extensions.Object;
@@ -82,49 +80,54 @@ public static partial class HttpClientExtension
     public static async ValueTask<TResponse> SendToTypeWithRetry<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request,
         int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(numberOfRetries);
         TimeSpan initialDelay = baseDelay ?? TimeSpan.FromSeconds(2);
 
-        AsyncRetryPolicy? retryPolicy = Policy.Handle<HttpRequestException>().Or<JsonException>().Or<InvalidOperationException>().WaitAndRetryAsync(numberOfRetries,
-            retryAttempt => initialDelay * Math.Pow(2, retryAttempt - 1) + TimeSpan.FromMilliseconds(RandomUtil.Next(0, 1000)), (exception, timespan, retryAttempt, _) =>
-            {
-                if (log)
-                    logger?.LogWarning("HTTP Attempt {retryAttempt}: Retrying after {timespan} seconds due to error: {message}", retryAttempt, timespan.TotalSeconds,
-                        exception.Message);
-            });
-
-        TResponse result = await retryPolicy.ExecuteAsync(async () =>
+        for (var retryAttempt = 0;;)
         {
-            // Unfortunately we need to clone the original request and send that one because you can only send a request once
-            using System.Net.Http.HttpRequestMessage clonedRequest = await request.Clone(cancellationToken: cancellationToken)
-                    .NoSync();
-
-            using System.Net.Http.HttpResponseMessage response = await client.SendAsync(clonedRequest, cancellationToken).NoSync();
-
-            if (!response.IsSuccessStatusCode)
-                throw new InvalidOperationException($"HTTP request failed with status code: {response.StatusCode}");
-
             try
             {
-                TResponse? result = await response.To<TResponse>(logger, cancellationToken).NoSync();
+                using System.Net.Http.HttpRequestMessage clonedRequest = await request.Clone(cancellationToken: cancellationToken)
+                    .NoSync();
 
-                if (result != null)
-                    return result;
+                using System.Net.Http.HttpResponseMessage response = await client.SendAsync(clonedRequest, cancellationToken).NoSync();
 
-                throw new JsonException($"Deserialization of type ({typeof(TResponse).Name}) resulted in null");
+                if (!response.IsSuccessStatusCode)
+                    throw new InvalidOperationException($"HTTP request failed with status code: {response.StatusCode}");
+
+                try
+                {
+                    TResponse? result = await response.To<TResponse>(logger, cancellationToken).NoSync();
+
+                    if (result != null)
+                        return result;
+
+                    throw new JsonException($"Deserialization of type ({typeof(TResponse).Name}) resulted in null");
+                }
+                catch (JsonException jsonEx)
+                {
+                    logger?.LogError(jsonEx, "Deserialization exception for type ({type})", typeof(TResponse).Name);
+                    throw new JsonException($"Deserialization of type ({typeof(TResponse).Name}) failed");
+                }
+                catch (Exception ex)
+                {
+                    logger?.LogError(ex, "General exception reading content");
+                    throw;
+                }
             }
-            catch (JsonException jsonEx)
+            catch (Exception exception) when ((exception is HttpRequestException or JsonException or InvalidOperationException) && retryAttempt < numberOfRetries)
             {
-                logger?.LogError(jsonEx, "Deserialization exception for type ({type})", typeof(TResponse).Name);
+                retryAttempt++;
+                TimeSpan delay = initialDelay * Math.Pow(2, retryAttempt - 1) + TimeSpan.FromMilliseconds(RandomUtil.Next(0, 1000));
 
-                throw new JsonException($"Deserialization of type ({typeof(TResponse).Name}) failed");
-            }
-            catch (Exception ex)
-            {
-                logger?.LogError(ex, "General exception reading content");
-                throw;
-            }
-        }).NoSync();
+                if (log)
+                {
+                    logger?.LogWarning("HTTP Attempt {retryAttempt}: Retrying after {timespan} seconds due to error: {message}", retryAttempt,
+                        delay.TotalSeconds, exception.Message);
+                }
 
-        return result;
+                await System.Threading.Tasks.Task.Delay(delay, cancellationToken).NoSync();
+            }
+        }
     }
 }

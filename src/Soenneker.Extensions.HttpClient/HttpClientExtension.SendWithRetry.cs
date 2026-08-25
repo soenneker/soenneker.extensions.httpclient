@@ -4,8 +4,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Polly;
-using Polly.Retry;
 using Soenneker.Extensions.HttpRequestMessage;
 using Soenneker.Extensions.Object;
 using Soenneker.Extensions.Task;
@@ -87,42 +85,36 @@ public static partial class HttpClientExtension
         System.Net.Http.HttpRequestMessage request, int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null,
         IMemoryStreamUtil? memoryStreamUtil = null, bool log = true, CancellationToken cancellationToken = default)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(numberOfRetries);
         TimeSpan initialDelay = baseDelay ?? TimeSpan.FromSeconds(2);
 
-        AsyncRetryPolicy? retryPolicy = Policy.Handle<HttpRequestException>()
-                                              .Or<InvalidOperationException>()
-                                              .WaitAndRetryAsync(numberOfRetries,
-                                                  retryAttempt => initialDelay * Math.Pow(2, retryAttempt - 1) +
-                                                                  TimeSpan.FromMilliseconds(RandomUtil.Next(0, 1000)), (exception, timespan, retryAttempt, _) =>
-                                                  {
-                                                      if (log)
-                                                          logger?.LogWarning(
-                                                              "HTTP Attempt {retryAttempt}: Retrying after {timespan} seconds due to error: {message}",
-                                                              retryAttempt, timespan.TotalSeconds, exception.Message);
-                                                  });
+        for (var retryAttempt = 0;;)
+        {
+            try
+            {
+                using System.Net.Http.HttpRequestMessage clonedRequest = await request.Clone(memoryStreamUtil, cancellationToken: cancellationToken).NoSync();
+                System.Net.Http.HttpResponseMessage response = await client.SendAsync(clonedRequest, cancellationToken).NoSync();
 
-        System.Net.Http.HttpResponseMessage result = await retryPolicy.ExecuteAsync(async () =>
-                                                                      {
-                                                                          // Unfortunately we need to clone the original request and send that one because you can only send a request once
-                                                                          using System.Net.Http.HttpRequestMessage clonedRequest = await request
-                                                                              .Clone(memoryStreamUtil, cancellationToken: cancellationToken)
-                                                                              .NoSync();
+                if (response.IsSuccessStatusCode)
+                    return response;
 
-                                                                          System.Net.Http.HttpResponseMessage response = await client
-                                                                              .SendAsync(clonedRequest, cancellationToken)
-                                                                              .NoSync();
+                System.Net.HttpStatusCode statusCode = response.StatusCode;
+                response.Dispose();
+                throw new InvalidOperationException($"HTTP request failed with status code: {statusCode}");
+            }
+            catch (Exception exception) when ((exception is HttpRequestException or InvalidOperationException) && retryAttempt < numberOfRetries)
+            {
+                retryAttempt++;
+                TimeSpan delay = initialDelay * Math.Pow(2, retryAttempt - 1) + TimeSpan.FromMilliseconds(RandomUtil.Next(0, 1000));
 
-                                                                          if (!response.IsSuccessStatusCode)
-                                                                          {
-                                                                              response.Dispose(); // Dispose on failure since we're not returning it
-                                                                              throw new InvalidOperationException(
-                                                                                  $"HTTP request failed with status code: {response.StatusCode}");
-                                                                          }
+                if (log)
+                {
+                    logger?.LogWarning("HTTP Attempt {retryAttempt}: Retrying after {timespan} seconds due to error: {message}", retryAttempt,
+                        delay.TotalSeconds, exception.Message);
+                }
 
-                                                                          return response; // Caller is responsible for disposing the successful response
-                                                                      })
-                                                                      .NoSync();
-
-        return result;
+                await System.Threading.Tasks.Task.Delay(delay, cancellationToken).NoSync();
+            }
+        }
     }
 }
