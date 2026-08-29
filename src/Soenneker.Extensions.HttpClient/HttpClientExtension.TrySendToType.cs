@@ -17,14 +17,14 @@ namespace Soenneker.Extensions.HttpClient;
 public static partial class HttpClientExtension
 {
     /// <summary>
-    /// Attempts to execute send to type.
+    /// Attempts to send and deserialize an HTTP request, returning null when the request or conversion cannot produce the requested type.
     /// </summary>
-    /// <typeparam name="TResponse">The TResponse type.</typeparam>
-    /// <param name="client">The client.</param>
-    /// <param name="uri">The uri.</param>
-    /// <param name="logger">The logger.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task containing the result of the operation.</returns>
+    /// <typeparam name="TResponse">The expected response payload type.</typeparam>
+    /// <param name="client">The HTTP client used to send the request.</param>
+    /// <param name="uri">The destination URI.</param>
+    /// <param name="logger">An optional logger for request and conversion failures.</param>
+    /// <param name="cancellationToken">Signals that the asynchronous operation should stop.</param>
+    /// <returns>The deserialized value, or null when it cannot be obtained.</returns>
     public static async ValueTask<TResponse?> TrySendToType<TResponse>(this System.Net.Http.HttpClient client, string uri, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var request = new System.Net.Http.HttpRequestMessage(HttpMethod.Get, uri);
@@ -32,16 +32,16 @@ public static partial class HttpClientExtension
     }
 
     /// <summary>
-    /// Attempts to execute send to type.
+    /// Attempts to send and deserialize an HTTP request, returning null when the request or conversion cannot produce the requested type.
     /// </summary>
-    /// <typeparam name="TResponse">The TResponse type.</typeparam>
-    /// <param name="client">The client.</param>
-    /// <param name="httpMethod">The http method.</param>
-    /// <param name="uri">The uri.</param>
-    /// <param name="request">The request.</param>
-    /// <param name="logger">The logger.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task containing the result of the operation.</returns>
+    /// <typeparam name="TResponse">The expected response payload type.</typeparam>
+    /// <param name="client">The HTTP client used to send the request.</param>
+    /// <param name="httpMethod">The HTTP method used when constructing the request.</param>
+    /// <param name="uri">The destination URI.</param>
+    /// <param name="request">The request payload, or a prepared request message for the matching overload.</param>
+    /// <param name="logger">An optional logger for request and conversion failures.</param>
+    /// <param name="cancellationToken">Signals that the asynchronous operation should stop.</param>
+    /// <returns>The deserialized value, or null when it cannot be obtained.</returns>
     public static async ValueTask<TResponse?> TrySendToType<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null,
         ILogger? logger = null, CancellationToken cancellationToken = default)
     {
@@ -54,14 +54,14 @@ public static partial class HttpClientExtension
     }
 
     /// <summary>
-    /// Attempts to execute send to type.
+    /// Attempts to send and deserialize an HTTP request, returning null when the request or conversion cannot produce the requested type.
     /// </summary>
-    /// <typeparam name="TResponse">The TResponse type.</typeparam>
-    /// <param name="client">The client.</param>
-    /// <param name="request">The request.</param>
-    /// <param name="logger">The logger.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task containing the result of the operation.</returns>
+    /// <typeparam name="TResponse">The expected response payload type.</typeparam>
+    /// <param name="client">The HTTP client used to send the request.</param>
+    /// <param name="request">The request payload, or a prepared request message for the matching overload.</param>
+    /// <param name="logger">An optional logger for request and conversion failures.</param>
+    /// <param name="cancellationToken">Signals that the asynchronous operation should stop.</param>
+    /// <returns>The deserialized value, or null when it cannot be obtained.</returns>
     public static async ValueTask<TResponse?> TrySendToType<TResponse>(this System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, ILogger? logger,
         CancellationToken cancellationToken = default)
     {

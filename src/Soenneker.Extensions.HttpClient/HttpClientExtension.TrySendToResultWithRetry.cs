@@ -27,6 +27,7 @@ public static partial class HttpClientExtension
     /// <param name="baseDelay">Optional. The initial delay for the exponential backoff calculation between retries. If not provided, defaults to a system-defined value. Subsequent retries exponentially increase the delay based on this initial value.</param>
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
+    /// <returns>Sends an HTTP GET request to the specified URI with retry logic, using exponential backoff and optional jitter for delays between retries. Returns an OperationResult containing either the success response or problem details, or null if all retries are exhausted.</returns>
     public static async ValueTask<OperationResult<TResponse>> TrySendToResultWithRetry<TResponse>(this System.Net.Http.HttpClient client, string uri, int numberOfRetries = 2,
         ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
@@ -48,6 +49,7 @@ public static partial class HttpClientExtension
     /// <param name="baseDelay">Optional. The initial delay for the exponential backoff calculation between retries. If not provided, defaults to a system-defined value. Each subsequent retry exponentially increases the delay based on this initial value.</param>
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
+    /// <returns>Sends an HTTP request with the specified method, URI, and request body, incorporating retry logic with exponential backoff and optional jitter for delays between retries. Returns an OperationResult containing either the success response or problem details, or null if all retries are exhausted.</returns>
     public static async ValueTask<OperationResult<TResponse>> TrySendToResultWithRetry<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod, string uri, object? request = null, int numberOfRetries = 2,
         ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {

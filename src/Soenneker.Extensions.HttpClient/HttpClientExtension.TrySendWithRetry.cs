@@ -26,6 +26,7 @@ public static partial class HttpClientExtension
     /// <param name="memoryStreamUtil"></param>
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
+    /// <returns>Sends an HTTP GET request to the specified URI with retry logic, using exponential backoff and optional jitter for delays between retries.</returns>
     public static async ValueTask<System.Net.Http.HttpResponseMessage?> TrySendWithRetry(this System.Net.Http.HttpClient client, string uri,
         int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, IMemoryStreamUtil? memoryStreamUtil = null, bool log = true,
         CancellationToken cancellationToken = default)
@@ -48,6 +49,7 @@ public static partial class HttpClientExtension
     /// <param name="memoryStreamUtil"></param>
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
+    /// <returns>Sends an HTTP request with the specified method, URI, and request body, incorporating retry logic with exponential backoff and optional jitter for delays between retries.</returns>
     public static async ValueTask<System.Net.Http.HttpResponseMessage?> TrySendWithRetry(this System.Net.Http.HttpClient client, HttpMethod httpMethod,
         string uri, object? request = null, int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null,
         IMemoryStreamUtil? memoryStreamUtil = null, bool log = true, CancellationToken cancellationToken = default)
