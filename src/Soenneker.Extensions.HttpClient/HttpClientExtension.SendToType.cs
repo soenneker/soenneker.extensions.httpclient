@@ -69,6 +69,7 @@ public static partial class HttpClientExtension
         if (!response.IsSuccessStatusCode)
             logger?.LogError("HTTP request ({uri}) returned a non-successful status code ({statusCode})", request.RequestUri, response.StatusCode);
 
-        return await response.ToStrict<TResponse>(cancellationToken: cancellationToken).NoSync();
+        response.EnsureSuccessStatusCode();
+        return await response.ToStrict<TResponse>(logger, cancellationToken).NoSync();
     }
 }
