@@ -20,21 +20,21 @@ public class HttpClientExtensionTests : HostedUnitTest
     }
 
     [Test]
-    public async System.Threading.Tasks.Task SendToTypeWithRetry_should_result()
+    public async System.Threading.Tasks.Task SendToTypeWithRetry_should_result(CancellationToken cancellationToken)
     {
-        System.Net.Http.HttpClient client = await _cache.Get(nameof(HttpClientExtensionTests), cancellationToken: System.Threading.CancellationToken.None);
+        System.Net.Http.HttpClient client = await _cache.Get(nameof(HttpClientExtensionTests), cancellationToken: cancellationToken);
 
-        var response = await client.SendToTypeWithRetry<TodoItemResponse>("https://jsonplaceholder.typicode.com/todos/1", logger: Logger, cancellationToken: System.Threading.CancellationToken.None);
+        var response = await client.SendToTypeWithRetry<TodoItemResponse>("https://jsonplaceholder.typicode.com/todos/1", logger: Logger, cancellationToken: cancellationToken);
 
         response.Should().NotBeNull();
     }
 
     [Test]
-    public async System.Threading.Tasks.Task TrySendToTypeWithRetry_should_return_null()
+    public async System.Threading.Tasks.Task TrySendToTypeWithRetry_should_return_null(CancellationToken cancellationToken)
     {
-        System.Net.Http.HttpClient client = await _cache.Get(nameof(HttpClientExtensionTests), cancellationToken: System.Threading.CancellationToken.None);
+        System.Net.Http.HttpClient client = await _cache.Get(nameof(HttpClientExtensionTests), cancellationToken: cancellationToken);
 
-        var response = await client.TrySendToTypeWithRetry<TodoItemResponse>("https://google.com", logger: Logger, log: false, cancellationToken: System.Threading.CancellationToken.None);
+        var response = await client.TrySendToTypeWithRetry<TodoItemResponse>("https://google.com", logger: Logger, log: false, cancellationToken: cancellationToken);
 
         response.Should().BeNull();
     }
