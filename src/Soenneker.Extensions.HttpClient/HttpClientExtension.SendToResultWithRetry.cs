@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Soenneker.Dtos.Results.Operation;
 using Soenneker.Extensions.HttpRequestMessage;
@@ -34,6 +35,8 @@ public static partial class HttpClientExtension
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>Sends an HTTP GET request to the specified URI with retry logic, using exponential backoff and optional jitter for delays between retries. Returns an OperationResult containing either the success response or problem details.</returns>
+    [RequiresUnreferencedCode("JSON serialization uses reflection and may require types removed by trimming.")]
+    [RequiresDynamicCode("JSON serialization may require runtime code generation.")]
     public static async ValueTask<OperationResult<TResponse>> SendToResultWithRetry<TResponse>(this System.Net.Http.HttpClient client, string uri,
         int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true, CancellationToken cancellationToken = default)
     {
@@ -57,6 +60,8 @@ public static partial class HttpClientExtension
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>Sends an HTTP request with the specified method, URI, and request body, incorporating retry logic with exponential backoff and optional jitter for delays between retries. Returns an OperationResult containing either the success response or problem details.</returns>
+    [RequiresUnreferencedCode("JSON serialization uses reflection and may require types removed by trimming.")]
+    [RequiresDynamicCode("JSON serialization may require runtime code generation.")]
     public static async ValueTask<OperationResult<TResponse>> SendToResultWithRetry<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod,
         string uri, object? request = null, int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true,
         CancellationToken cancellationToken = default)
@@ -64,7 +69,7 @@ public static partial class HttpClientExtension
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
 
         if (request != null)
-            requestMessage.Content = request.ToHttpContent();
+            requestMessage.Content = request.ToHttpContent(GetJsonTypeInfo<object>());
 
         return await client.SendToResultWithRetry<TResponse>(requestMessage, numberOfRetries, logger, baseDelay, log, cancellationToken)
                            .NoSync();
@@ -88,6 +93,8 @@ public static partial class HttpClientExtension
     /// This method retries requests upon encountering an <see cref="HttpRequestException"/>, <see cref="JsonException"/>, or <see cref="InvalidOperationException"/> (the latter representing non-success status codes).
     /// Each retry delay is calculated based on exponential backoff strategy with optional jitter to prevent retry storms in distributed systems.
     /// </remarks>
+    [RequiresUnreferencedCode("JSON serialization uses reflection and may require types removed by trimming.")]
+    [RequiresDynamicCode("JSON serialization may require runtime code generation.")]
     public static async ValueTask<OperationResult<TResponse>> SendToResultWithRetry<TResponse>(this System.Net.Http.HttpClient client,
         System.Net.Http.HttpRequestMessage request, int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null, bool log = true,
         CancellationToken cancellationToken = default)
@@ -107,7 +114,7 @@ public static partial class HttpClientExtension
                     if (!response.IsSuccessStatusCode)
                         throw new InvalidOperationException($"HTTP request failed with status code: {response.StatusCode}");
 
-                    return await response.ToResult<TResponse>(logger, cancellationToken).NoSync();
+                    return await response.ToResult<TResponse>(GetJsonTypeInfo<TResponse>(), logger, cancellationToken).NoSync();
                 }
                 catch (Exception exception) when ((exception is HttpRequestException or InvalidOperationException) && retryAttempt < numberOfRetries)
                 {

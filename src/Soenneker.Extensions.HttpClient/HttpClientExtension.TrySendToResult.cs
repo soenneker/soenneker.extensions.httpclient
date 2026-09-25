@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Soenneker.Dtos.Results.Operation;
 using Soenneker.Extensions.HttpResponseMessage;
@@ -27,6 +28,8 @@ public static partial class HttpClientExtension
     /// <param name="logger">An optional logger for request and conversion failures.</param>
     /// <param name="cancellationToken">Signals that the asynchronous operation should stop.</param>
     /// <returns>An operation result containing the response value or failure details.</returns>
+    [RequiresUnreferencedCode("JSON serialization uses reflection and may require types removed by trimming.")]
+    [RequiresDynamicCode("JSON serialization may require runtime code generation.")]
     public static async ValueTask<OperationResult<TResponse>> TrySendToResult<TResponse>(this System.Net.Http.HttpClient client, string uri,
         ILogger? logger = null, CancellationToken cancellationToken = default)
     {
@@ -46,13 +49,15 @@ public static partial class HttpClientExtension
     /// <param name="logger">An optional logger for request and conversion failures.</param>
     /// <param name="cancellationToken">Signals that the asynchronous operation should stop.</param>
     /// <returns>An operation result containing the response value or failure details.</returns>
+    [RequiresUnreferencedCode("JSON serialization uses reflection and may require types removed by trimming.")]
+    [RequiresDynamicCode("JSON serialization may require runtime code generation.")]
     public static async ValueTask<OperationResult<TResponse>> TrySendToResult<TResponse>(this System.Net.Http.HttpClient client, HttpMethod httpMethod,
         string uri, object? request = null, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
 
         if (request != null)
-            requestMessage.Content = request.TryToHttpContent();
+            requestMessage.Content = request.TryToHttpContent(GetJsonTypeInfo<object>());
 
         return await client.TrySendToResult<TResponse>(requestMessage, logger, cancellationToken)
                            .NoSync();
@@ -67,6 +72,8 @@ public static partial class HttpClientExtension
     /// <param name="logger">An optional logger for request and conversion failures.</param>
     /// <param name="cancellationToken">Signals that the asynchronous operation should stop.</param>
     /// <returns>An operation result containing the response value or failure details.</returns>
+    [RequiresUnreferencedCode("JSON serialization uses reflection and may require types removed by trimming.")]
+    [RequiresDynamicCode("JSON serialization may require runtime code generation.")]
     public static async ValueTask<OperationResult<TResponse>> TrySendToResult<TResponse>(this System.Net.Http.HttpClient client,
         System.Net.Http.HttpRequestMessage request, ILogger? logger, CancellationToken cancellationToken = default)
     {
@@ -80,7 +87,7 @@ public static partial class HttpClientExtension
                 logger?.LogWarning("HTTP request to {Uri} returned a non-success status code {StatusCode}", request.RequestUri, response.StatusCode);
             }
 
-            return await response.ToResult<TResponse>(logger, cancellationToken)
+            return await response.ToResult<TResponse>(GetJsonTypeInfo<TResponse>(), logger, cancellationToken)
                                  .NoSync();
         }
         catch (OperationCanceledException oce) when (cancellationToken.IsCancellationRequested)

@@ -45,9 +45,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Soenneker.Extensions.HttpRequestMessage" Version="4.0.1412" />
-        <PackageReference Include="Soenneker.Extensions.HttpResponseMessage" Version="4.0.2542" />
-        <PackageReference Include="Soenneker.Extensions.Object" Version="4.0.4378" />
+        <PackageReference Include="Soenneker.Extensions.HttpRequestMessage" Version="4.0.1413" />
+        <PackageReference Include="Soenneker.Extensions.HttpResponseMessage" Version="4.0.2543" />
+        <PackageReference Include="Soenneker.Extensions.Object" Version="4.0.4379" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Soenneker.Dtos.ProblemDetails" Version="4.0.463" />

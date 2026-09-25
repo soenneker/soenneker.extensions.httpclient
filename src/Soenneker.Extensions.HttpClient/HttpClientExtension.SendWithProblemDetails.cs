@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Soenneker.Dtos.ProblemDetails;
 using System;
@@ -22,6 +23,8 @@ public static partial class HttpClientExtension
     /// <param name="cancellationToken">Signals that the asynchronous operation should stop.</param>
     /// <returns>A tuple containing either the success value or problem details.</returns>
     [Obsolete("SendToResult should be used; removing soon")]
+    [RequiresUnreferencedCode("JSON serialization uses reflection and may require types removed by trimming.")]
+    [RequiresDynamicCode("JSON serialization may require runtime code generation.")]
     public static ValueTask<(TSuccessResponse? SuccessResponse, ProblemDetailsDto? ErrorResponse)> SendWithProblemDetails<TSuccessResponse>(this System.Net.Http.HttpClient client, string uri,
         ILogger? logger = null, CancellationToken cancellationToken = default)
     {
@@ -40,6 +43,8 @@ public static partial class HttpClientExtension
     /// <param name="cancellationToken">Signals that the asynchronous operation should stop.</param>
     /// <returns>A tuple containing either the success value or problem details.</returns>
     [Obsolete("SendToResult should be used; removing soon")]
+    [RequiresUnreferencedCode("JSON serialization uses reflection and may require types removed by trimming.")]
+    [RequiresDynamicCode("JSON serialization may require runtime code generation.")]
     public static ValueTask<(TSuccessResponse? SuccessResponse, ProblemDetailsDto? ErrorResponse)> SendWithProblemDetails<TSuccessResponse>(this System.Net.Http.HttpClient client,
         HttpMethod httpMethod, string uri, object? request = null, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
@@ -56,6 +61,8 @@ public static partial class HttpClientExtension
     /// <param name="cancellationToken">Signals that the asynchronous operation should stop.</param>
     /// <returns>A tuple containing either the success value or problem details.</returns>
     [Obsolete("SendToResult should be used; removing soon")]
+    [RequiresUnreferencedCode("JSON serialization uses reflection and may require types removed by trimming.")]
+    [RequiresDynamicCode("JSON serialization may require runtime code generation.")]
     public static ValueTask<(TSuccessResponse? SuccessResponse, ProblemDetailsDto? ErrorResponse)> SendWithProblemDetails<TSuccessResponse>(this System.Net.Http.HttpClient client,
         System.Net.Http.HttpRequestMessage requestMessage, ILogger? logger = null, CancellationToken cancellationToken = default)
     {

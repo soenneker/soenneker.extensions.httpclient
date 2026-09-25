@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System;
 using System.Net.Http;
 using System.Text.Json;
@@ -50,6 +51,8 @@ public static partial class HttpClientExtension
     /// <param name="log"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>Sends an HTTP request with the specified method, URI, and request body, incorporating retry logic with exponential backoff and optional jitter for delays between retries.</returns>
+    [RequiresUnreferencedCode("JSON serialization uses reflection and may require types removed by trimming.")]
+    [RequiresDynamicCode("JSON serialization may require runtime code generation.")]
     public static async ValueTask<System.Net.Http.HttpResponseMessage?> TrySendWithRetry(this System.Net.Http.HttpClient client, HttpMethod httpMethod,
         string uri, object? request = null, int numberOfRetries = 2, ILogger? logger = null, TimeSpan? baseDelay = null,
         IMemoryStreamUtil? memoryStreamUtil = null, bool log = true, CancellationToken cancellationToken = default)
@@ -57,7 +60,7 @@ public static partial class HttpClientExtension
         using var requestMessage = new System.Net.Http.HttpRequestMessage(httpMethod, uri);
 
         if (request != null)
-            requestMessage.Content = request.TryToHttpContent();
+            requestMessage.Content = request.TryToHttpContent(GetJsonTypeInfo<object>());
 
         return await client.TrySendWithRetry(requestMessage, numberOfRetries, logger, baseDelay, memoryStreamUtil, log, cancellationToken)
                            .NoSync();
