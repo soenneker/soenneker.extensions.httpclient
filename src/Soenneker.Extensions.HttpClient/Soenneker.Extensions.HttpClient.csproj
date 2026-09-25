@@ -45,12 +45,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Soenneker.Extensions.HttpRequestMessage" Version="4.0.1409" />
-        <PackageReference Include="Soenneker.Extensions.HttpResponseMessage" Version="4.0.2533" />
-        <PackageReference Include="Soenneker.Extensions.Object" Version="4.0.4374" />
+        <PackageReference Include="Soenneker.Extensions.HttpRequestMessage" Version="4.0.1410" />
+        <PackageReference Include="Soenneker.Extensions.HttpResponseMessage" Version="4.0.2540" />
+        <PackageReference Include="Soenneker.Extensions.Object" Version="4.0.4377" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Soenneker.Dtos.ProblemDetails" Version="4.0.463" />
-        <PackageReference Include="Soenneker.Dtos.Results.Operation" Version="4.0.64" />
+        <PackageReference Include="Soenneker.Dtos.Results.Operation" Version="4.0.65" />
     </ItemGroup>
 </Project>
