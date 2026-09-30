@@ -20,7 +20,7 @@ public class HttpClientExtensionTests : HostedUnitTest
     }
 
     [Test]
-    public async System.Threading.Tasks.Task SendToTypeWithRetry_should_result(CancellationToken cancellationToken)
+    public async System.Threading.Tasks.ValueTask SendToTypeWithRetry_should_result(CancellationToken cancellationToken)
     {
         System.Net.Http.HttpClient client = await _cache.Get(nameof(HttpClientExtensionTests), cancellationToken: cancellationToken);
 
@@ -30,7 +30,7 @@ public class HttpClientExtensionTests : HostedUnitTest
     }
 
     [Test]
-    public async System.Threading.Tasks.Task TrySendToTypeWithRetry_should_return_null(CancellationToken cancellationToken)
+    public async System.Threading.Tasks.ValueTask TrySendToTypeWithRetry_should_return_null(CancellationToken cancellationToken)
     {
         System.Net.Http.HttpClient client = await _cache.Get(nameof(HttpClientExtensionTests), cancellationToken: cancellationToken);
 
@@ -40,7 +40,7 @@ public class HttpClientExtensionTests : HostedUnitTest
     }
 
     [Test]
-    public async System.Threading.Tasks.Task SendToType_rejects_a_non_success_response_even_when_the_body_matches()
+    public async System.Threading.Tasks.ValueTask SendToType_rejects_a_non_success_response_even_when_the_body_matches()
     {
         using var client = new System.Net.Http.HttpClient(new StaticResponseHandler());
 

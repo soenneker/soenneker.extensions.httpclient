@@ -12,7 +12,7 @@ public class JsonCompatibilityTests
     [Test]
     [Arguments(false)]
     [Arguments(true)]
-    public async System.Threading.Tasks.Task Object_request_and_typed_response_preserve_web_serialization(bool trySend)
+    public async System.Threading.Tasks.ValueTask Object_request_and_typed_response_preserve_web_serialization(bool trySend)
     {
         using var handler = new JsonResponseHandler(HttpStatusCode.OK);
         using var client = new System.Net.Http.HttpClient(handler);
@@ -30,7 +30,7 @@ public class JsonCompatibilityTests
     }
 
     [Test]
-    public async System.Threading.Tasks.Task Typed_error_response_is_deserialized()
+    public async System.Threading.Tasks.ValueTask Typed_error_response_is_deserialized()
     {
         using var client = new System.Net.Http.HttpClient(new JsonResponseHandler(HttpStatusCode.BadRequest));
 
