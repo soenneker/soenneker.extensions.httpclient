@@ -12,15 +12,15 @@ public class JsonCompatibilityTests
     [Test]
     [Arguments(false)]
     [Arguments(true)]
-    public async System.Threading.Tasks.ValueTask Object_request_and_typed_response_preserve_web_serialization(bool trySend)
+    public async System.Threading.Tasks.ValueTask Object_request_and_typed_response_preserve_web_serialization(bool trySend, CancellationToken cancellationToken)
     {
         using var handler = new JsonResponseHandler(HttpStatusCode.OK);
         using var client = new System.Net.Http.HttpClient(handler);
         object request = new Payload { DisplayName = "request" };
 
         Payload? response = trySend
-            ? await client.TrySendToType<Payload>(HttpMethod.Post, "https://example.test/payload", request)
-            : await client.SendToType<Payload>(HttpMethod.Post, "https://example.test/payload", request);
+            ? await client.TrySendToType<Payload>(HttpMethod.Post, "https://example.test/payload", request, cancellationToken: cancellationToken)
+            : await client.SendToType<Payload>(HttpMethod.Post, "https://example.test/payload", request, cancellationToken: cancellationToken);
 
         response.Should().NotBeNull();
         response!.DisplayName.Should().Be("response");
@@ -30,11 +30,11 @@ public class JsonCompatibilityTests
     }
 
     [Test]
-    public async System.Threading.Tasks.ValueTask Typed_error_response_is_deserialized()
+    public async System.Threading.Tasks.ValueTask Typed_error_response_is_deserialized(CancellationToken cancellationToken)
     {
         using var client = new System.Net.Http.HttpClient(new JsonResponseHandler(HttpStatusCode.BadRequest));
 
-        var (success, error) = await client.SendWithError<Payload, Payload>("https://example.test/payload");
+        var (success, error) = await client.SendWithError<Payload, Payload>("https://example.test/payload", cancellationToken: cancellationToken);
 
         success.Should().BeNull();
         error.Should().NotBeNull();

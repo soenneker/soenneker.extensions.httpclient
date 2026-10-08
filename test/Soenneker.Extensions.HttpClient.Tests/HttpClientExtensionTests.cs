@@ -40,11 +40,11 @@ public class HttpClientExtensionTests : HostedUnitTest
     }
 
     [Test]
-    public async System.Threading.Tasks.ValueTask SendToType_rejects_a_non_success_response_even_when_the_body_matches()
+    public async System.Threading.Tasks.ValueTask SendToType_rejects_a_non_success_response_even_when_the_body_matches(CancellationToken cancellationToken)
     {
         using var client = new System.Net.Http.HttpClient(new StaticResponseHandler());
 
-        await Assert.That(async () => await client.SendToType<TodoItemResponse>("https://example.test/todo"))
+        await Assert.That(async () => await client.SendToType<TodoItemResponse>("https://example.test/todo", cancellationToken: cancellationToken))
                     .Throws<HttpRequestException>();
     }
 
