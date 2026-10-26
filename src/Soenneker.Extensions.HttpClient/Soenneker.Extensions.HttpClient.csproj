@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <IsAotCompatible>true</IsAotCompatible>
         <Nullable>enable</Nullable>
         <Platforms>AnyCPU</Platforms>
@@ -9,7 +9,7 @@
 
     <PropertyGroup>
         <Description>A collection of helpful HttpClient extension methods, like retry and auto (de)serialization</Description>
-        <Version Condition="'$(BUILD_VERSION)' == ''">4.0.0</Version>
+        <Version Condition="'$(BUILD_VERSION)' == ''">11.0.0</Version>
         <Version Condition="'$(BUILD_VERSION)' != ''">$(BUILD_VERSION)</Version>
         <AssemblyName>Soenneker.Extensions.HttpClient</AssemblyName>
         <PackageId>Soenneker.Extensions.HttpClient</PackageId>
@@ -46,11 +46,11 @@
 
     <ItemGroup>
         <PackageReference Include="Soenneker.Extensions.HttpRequestMessage" Version="4.0.1437" />
-        <PackageReference Include="Soenneker.Extensions.HttpResponseMessage" Version="4.0.2612" />
+        <PackageReference Include="Soenneker.Extensions.HttpResponseMessage" Version="4.0.2614" />
         <PackageReference Include="Soenneker.Extensions.Object" Version="4.0.4419" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Soenneker.Dtos.ProblemDetails" Version="4.0.480" />
-        <PackageReference Include="Soenneker.Dtos.Results.Operation" Version="4.0.81" />
+        <PackageReference Include="Soenneker.Dtos.Results.Operation" Version="4.0.82" />
     </ItemGroup>
 </Project>
