@@ -51,7 +51,5 @@
         <PackageReference Include="Soenneker.Extensions.Object" Version="11.0.4427" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Soenneker.Dtos.ProblemDetails" Version="11.0.483" />
-        <PackageReference Include="Soenneker.Dtos.Results.Operation" Version="11.0.85" />
     </ItemGroup>
 </Project>
