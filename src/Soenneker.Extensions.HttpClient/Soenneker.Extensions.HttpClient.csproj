@@ -47,8 +47,8 @@
 
     <ItemGroup>
         <PackageReference Include="Soenneker.Extensions.HttpRequestMessage" Version="11.0.1447" />
-        <PackageReference Include="Soenneker.Extensions.HttpResponseMessage" Version="11.0.2635" />
-        <PackageReference Include="Soenneker.Extensions.Object" Version="11.0.4428" />
+        <PackageReference Include="Soenneker.Extensions.HttpResponseMessage" Version="11.0.2636" />
+        <PackageReference Include="Soenneker.Extensions.Object" Version="11.0.4429" />
     </ItemGroup>
     <ItemGroup>
     </ItemGroup>
