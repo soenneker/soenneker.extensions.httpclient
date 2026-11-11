@@ -11,5 +11,5 @@ public static partial class HttpClientExtension
 {
     [RequiresUnreferencedCode("JSON serialization uses reflection and may require types removed by trimming.")]
     [RequiresDynamicCode("JSON serialization may require runtime code generation.")]
-    private static JsonTypeInfo<T> GetJsonTypeInfo<T>() => (JsonTypeInfo<T>)JsonOptionsCollection.WebOptions.GetTypeInfo(typeof(T));
+    private static JsonTypeInfo<T> GetJsonTypeInfo<T>() => JsonOptionsCollection.WebOptions.GetTypeInfo<T>();
 }
